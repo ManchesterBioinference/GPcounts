@@ -1,0 +1,612 @@
+ID,Symbol,Description,Transcription Factor,log2FoldChange,Adjusted p-value
+ENSMUSG00000000394,Gcg,glucagon,0,-11.2821958563,0
+ENSMUSG00000001504,Irx2,Iroquois related homeobox 2 (Drosophila),1,-9.3263863716,0
+ENSMUSG00000004631,Sgce,"sarcoglycan, epsilon",0,-9.8410298784,0
+ENSMUSG00000027524,Edn3,endothelin 3,,-9.5630776915,0
+ENSMUSG00000027971,Ndst4,N-deacetylase/N-sulfotransferase (heparin glucosaminyl) 4,,-7.3624200508,0
+ENSMUSG00000061808,Ttr,transthyretin,,-4.7148231907,0
+ENSMUSG00000035277,Arx,aristaless related homeobox,1,-8.2527112193,4.72E-301
+ENSMUSG00000074872,Ctxn2,cortexin 2,0,-7.9706809293,5.60E-277
+ENSMUSG00000019577,Pdk4,"pyruvate dehydrogenase kinase, isoenzyme 4",,-7.7705046268,4.12E-276
+ENSMUSG00000009734,Pou6f2,"POU domain, class 6, transcription factor 2",1,-8.8649265749,1.82E-250
+ENSMUSG00000032776,Mctp2,"multiple C2 domains, transmembrane 2",0,-9.410753622,7.56E-250
+ENSMUSG00000053182,Gm609,predicted gene 609,,-4.7746397635,4.80E-237
+ENSMUSG00000060988,Galnt13,UDP-N-acetyl-alpha-D-galactosamine:polypeptide N-acetylgalactosaminyltransferase 13,,-8.7312400596,5.23E-231
+ENSMUSG00000073007,Fam46d,"family with sequence similarity 46, member D",,-9.3585341984,4.34E-223
+ENSMUSG00000004151,Etv1,ets variant 1,1,-5.8750610207,5.92E-195
+ENSMUSG00000029878,Dbpht2,DNA binding protein with his-thr domain,0,-3.0714820545,1.16E-175
+ENSMUSG00000026249,Serpine2,"serine (or cysteine) peptidase inhibitor, clade E, member 2",,-4.4454462258,2.78E-173
+ENSMUSG00000092035,Peg10,paternally expressed 10,,-9.1035864266,2.63E-149
+ENSMUSG00000017316,Ppy,pancreatic polypeptide,,-6.345692779,4.01E-136
+ENSMUSG00000049112,Oxtr,oxytocin receptor,,-7.3533018569,9.89E-134
+ENSMUSG00000040972,Igsf21,"immunoglobulin superfamily, member 21",,-5.2250405412,9.64E-126
+ENSMUSG00000071265,1700086L19Rik,-,,-2.62448424,3.44E-121
+ENSMUSG00000056854,Pou3f4,"POU domain, class 3, transcription factor 4",1,-6.0939159425,1.54E-114
+ENSMUSG00000041245,Wnk3,WNK lysine deficient protein kinase 3,0,-4.6665775857,2.08E-113
+ENSMUSG00000060969,Irx1,Iroquois related homeobox 1 (Drosophila),1,-6.069032965,2.49E-113
+ENSMUSG00000059401,Mamld1,mastermind-like domain containing 1,0,-5.0538151106,6.03E-113
+ENSMUSG00000028415,Spink4,"serine peptidase inhibitor, Kazal type 4",,-8.5430963943,3.94E-112
+ENSMUSG00000030342,Cd9,CD9 antigen,,-3.5053399501,2.71E-108
+ENSMUSG00000069805,Fbp1,fructose bisphosphatase 1,,-6.5860313946,7.83E-104
+ENSMUSG00000033022,Cdo1,"cysteine dioxygenase 1, cytosolic",,-6.3953077688,5.75E-103
+ENSMUSG00000036815,Dpp10,dipeptidylpeptidase 10,,-2.3377498051,1.09E-101
+ENSMUSG00000039239,Tgfb2,"transforming growth factor, beta 2",,-6.7891575732,6.02E-98
+ENSMUSG00000025089,Gfra1,glial cell line derived neurotrophic factor family receptor alpha 1,,-7.1294677999,1.29E-94
+ENSMUSG00000031303,Map3k15,mitogen-activated protein kinase kinase kinase 15,,-3.5204974975,1.34E-94
+ENSMUSG00000032554,Trf,transferrin,,-4.9385961275,2.69E-94
+ENSMUSG00000047904,Sstr2,somatostatin receptor 2,,-7.3286537125,2.32E-93
+ENSMUSG00000068263,Efcc1,EF hand and coiled-coil domain containing 1,,-3.5347802087,3.98E-90
+ENSMUSG00000071178,Serpina1b,"serine (or cysteine) preptidase inhibitor, clade A, member 1B",,-8.8356071141,1.18E-89
+ENSMUSG00000018339,Gpx3,glutathione peroxidase 3,,-3.3829224107,2.09E-89
+ENSMUSG00000030616,Sytl2,synaptotagmin-like 2,,-7.7517532402,1.91E-85
+ENSMUSG00000071177,Serpina1d,"serine (or cysteine) peptidase inhibitor, clade A, member 1D",,-8.1402471307,2.83E-84
+ENSMUSG00000029195,Klb,klotho beta,,-5.4147590855,2.28E-81
+ENSMUSG00000086286,Gm15138,-,,-4.1853910338,4.12E-81
+ENSMUSG00000038412,Higd1a,"HIG1 domain family, member 1A",,-4.2318087627,4.57E-80
+ENSMUSG00000073102,Drc1,dynein regulatory complex subunit 1,,-5.3732495216,4.58E-80
+ENSMUSG00000031099,Smarca1,"SWI/SNF related, matrix associated, actin dependent regulator of chromatin, subfamily a, member 1",,-3.8489482982,2.58E-79
+ENSMUSG00000026432,Avpr1b,arginine vasopressin receptor 1B,,-8.172221767,8.58E-78
+ENSMUSG00000043531,Sorcs1,sortilin-related VPS10 domain containing receptor 1,,-7.6463772766,4.87E-77
+ENSMUSG00000037636,Slc25a43,"solute carrier family 25, member 43",,-2.9335565333,6.10E-77
+ENSMUSG00000029669,Tspan12,tetraspanin 12,,-5.7172440969,3.13E-75
+ENSMUSG00000073530,Pappa2,pappalysin 2,,-4.7216910328,1.36E-74
+ENSMUSG00000033831,Fgb,fibrinogen beta chain,,-8.7601827007,3.06E-73
+ENSMUSG00000017493,Igfbp4,insulin-like growth factor binding protein 4,,-2.9094299341,3.99E-73
+ENSMUSG00000032523,Hhatl,hedgehog acyltransferase-like,,-6.4848709395,4.84E-72
+ENSMUSG00000042961,Egflam,"EGF-like, fibronectin type III and laminin G domains",,-8.1035486038,6.36E-71
+ENSMUSG00000004415,Col26a1,"collagen, type XXVI, alpha 1",,-5.1554390886,3.87E-70
+ENSMUSG00000046178,Nxph1,neurexophilin 1,,-5.9642103171,5.48E-70
+ENSMUSG00000017311,Pyy,peptide YY,,-3.84999217,1.12E-65
+ENSMUSG00000045103,Dmd,"dystrophin, muscular dystrophy",,-4.5774075756,2.46E-65
+ENSMUSG00000097354,2310001H17Rik,-,,-6.6402804,5.33E-64
+ENSMUSG00000026103,Gls,glutaminase,,-2.3966528421,1.86E-63
+ENSMUSG00000033981,Gria2,"glutamate receptor, ionotropic, AMPA2 (alpha 2)",,-3.9044671624,2.74E-63
+ENSMUSG00000036782,Klhl13,kelch-like 13,,-4.8235708371,1.72E-62
+ENSMUSG00000052595,A1cf,APOBEC1 complementation factor,,-3.8463604201,4.02E-62
+ENSMUSG00000019987,Arg1,"arginase, liver",,-4.9682314606,5.68E-62
+ENSMUSG00000073295,Nudt11,nudix (nucleoside diphosphate linked moiety X)-type motif 11,,-4.7551625223,3.32E-61
+ENSMUSG00000028399,Ptprd,"protein tyrosine phosphatase, receptor type, D",,-3.8166652562,4.04E-61
+ENSMUSG00000016256,Ctsz,cathepsin Z,,-2.2005088188,1.09E-59
+ENSMUSG00000001173,Ocrl,oculocerebrorenal syndrome of Lowe,,-2.1129152572,1.24E-59
+ENSMUSG00000002565,Scin,scinderin,,-4.4344039646,1.35E-58
+ENSMUSG00000027777,Schip1,schwannomin interacting protein 1,,-3.8648082762,1.72E-58
+ENSMUSG00000039313,AF529169,cDNA sequence AF529169,,-6.5164221092,3.02E-58
+ENSMUSG00000038305,Spats2l,"spermatogenesis associated, serine-rich 2-like",,-6.7588649045,8.89E-58
+ENSMUSG00000015405,Ace2,angiotensin I converting enzyme (peptidyl-dipeptidase A) 2,,-4.9999103272,1.19E-57
+ENSMUSG00000020723,Cacng4,"calcium channel, voltage-dependent, gamma subunit 4",,-4.607085374,1.06E-56
+ENSMUSG00000053399,Adamts18,"a disintegrin-like and metallopeptidase (reprolysin type) with thrombospondin type 1 motif, 18",,-5.4416061111,1.37E-56
+ENSMUSG00000022054,Nefm,"neurofilament, medium polypeptide",,-3.8205293574,2.04E-56
+ENSMUSG00000060487,Samd5,sterile alpha motif domain containing 5,,-5.8026226331,2.27E-56
+ENSMUSG00000025551,Fgf14,fibroblast growth factor 14,,-7.1013084924,5.71E-56
+ENSMUSG00000052125,F730043M19Rik,-,,-3.8946945885,2.45E-55
+ENSMUSG00000031170,Slc38a5,"solute carrier family 38, member 5",,-3.5132778818,1.85E-54
+ENSMUSG00000037012,Hk1,hexokinase 1,,-7.4553954747,1.04E-53
+ENSMUSG00000032649,Colgalt2,collagen beta(1-O)galactosyltransferase 2,,-6.630876409,2.50E-53
+ENSMUSG00000093587,Gm20554,-,,-6.0689416947,3.99E-53
+ENSMUSG00000032625,Thsd7a,"thrombospondin, type I, domain containing 7A",,-7.2323622275,6.11E-53
+ENSMUSG00000029093,Sorcs2,sortilin-related VPS10 domain containing receptor 2,,-4.9033744865,1.55E-52
+ENSMUSG00000023224,Serping1,"serine (or cysteine) peptidase inhibitor, clade G, member 1",,-3.1714174112,2.39E-52
+ENSMUSG00000031093,Dock11,dedicator of cytokinesis 11,,-2.7622235313,9.94E-52
+ENSMUSG00000030228,Pik3c2g,"phosphatidylinositol 3-kinase, C2 domain containing, gamma polypeptide",,-3.5297025206,1.20E-51
+ENSMUSG00000024558,Mapk4,mitogen-activated protein kinase 4,,-4.773047106,2.97E-51
+ENSMUSG00000034591,Slc41a2,"solute carrier family 41, member 2",,-4.0150387595,1.17E-50
+ENSMUSG00000089768,Tmsb15b1,thymosin beta 15b1,,-2.3467521658,9.01E-50
+ENSMUSG00000020407,Upp1,uridine phosphorylase 1,,-3.0815596664,2.04E-48
+ENSMUSG00000045312,Lhfpl2,lipoma HMGIC fusion partner-like 2,,-6.694655995,9.81E-48
+ENSMUSG00000029661,Col1a2,"collagen, type I, alpha 2",,-5.6742260976,3.80E-47
+ENSMUSG00000029516,Cit,citron,,-3.7476670857,4.59E-47
+ENSMUSG00000036437,Npy1r,neuropeptide Y receptor Y1,,-3.4482953046,5.60E-46
+ENSMUSG00000080715,Gm5406,-,,-4.2355341681,2.23E-45
+ENSMUSG00000030102,Itpr1,"inositol 1,4,5-trisphosphate receptor 1",,-2.3197469922,2.93E-45
+ENSMUSG00000029182,1700001C02Rik,RIKEN cDNA 1700001C02 gene,,-6.3785153428,8.29E-45
+ENSMUSG00000079679,Vwde,von Willebrand factor D and EGF domains,,-5.8408642595,9.86E-45
+ENSMUSG00000066366,Serpina1a,"serine (or cysteine) peptidase inhibitor, clade A, member 1A",,-6.8156129039,8.50E-44
+ENSMUSG00000032076,Cadm1,cell adhesion molecule 1,,-3.3881237838,3.26E-43
+ENSMUSG00000021699,Pde4d,"phosphodiesterase 4D, cAMP specific",,-3.1152051614,4.20E-43
+ENSMUSG00000029656,C8b,"complement component 8, beta polypeptide",,-4.1829427222,8.93E-43
+ENSMUSG00000027082,Tfpi,tissue factor pathway inhibitor,,-5.1273311151,1.12E-42
+ENSMUSG00000038224,Serpinf2,"serine (or cysteine) peptidase inhibitor, clade F, member 2",,-7.2380165491,1.43E-42
+ENSMUSG00000001986,Gria3,"glutamate receptor, ionotropic, AMPA3 (alpha 3)",,-3.4658169892,1.65E-42
+ENSMUSG00000028982,Slc25a33,"solute carrier family 25, member 33",,-4.7489804776,1.99E-41
+ENSMUSG00000017165,Gast,gastrin,,-4.64614679,1.54E-40
+ENSMUSG00000000392,Fap,fibroblast activation protein,,-6.3070521308,4.60E-40
+ENSMUSG00000087259,2610035D17Rik,-,,-5.1180993798,5.94E-40
+ENSMUSG00000039607,Rbms3,"RNA binding motif, single stranded interacting protein",,-3.0576527524,7.58E-40
+ENSMUSG00000038580,Sct,secretin,,-5.562597291,8.57E-40
+ENSMUSG00000027359,Slc27a2,"solute carrier family 27 (fatty acid transporter), member 2",,-6.6808363761,1.38E-39
+ENSMUSG00000036872,Abcc12,"ATP-binding cassette, sub-family C (CFTR/MRP), member 12",,-6.4841334169,6.28E-39
+ENSMUSG00000064177,Ghrl,ghrelin,,-6.096259918,1.02E-38
+ENSMUSG00000063531,Sema3e,"sema domain, immunoglobulin domain (Ig), short basic domain, secreted, (semaphorin) 3E",,-4.46170628,2.04E-38
+ENSMUSG00000079056,Kcnip3,"Kv channel interacting protein 3, calsenilin",,-3.5929123788,5.06E-38
+ENSMUSG00000047259,Mc4r,melanocortin 4 receptor,,-6.4970330536,1.42E-37
+ENSMUSG00000041460,Cacna2d4,"calcium channel, voltage-dependent, alpha 2/delta subunit 4",,-2.9583044533,2.48E-37
+ENSMUSG00000019889,Ptprk,"protein tyrosine phosphatase, receptor type, K",,-3.8386925628,4.76E-37
+ENSMUSG00000005220,Corin,corin,,-6.5782044685,7.19E-37
+ENSMUSG00000086425,F730016J06Rik,-,,-5.1962556732,7.32E-37
+ENSMUSG00000045763,Basp1,"brain abundant, membrane attached signal protein 1",,-4.1526821494,1.47E-36
+ENSMUSG00000093226,Gm25749,-,,-3.7329406664,3.33E-36
+ENSMUSG00000045875,Adra1a,"adrenergic receptor, alpha 1a",,-3.8568704791,6.34E-36
+ENSMUSG00000020176,Grb10,growth factor receptor bound protein 10,,-2.2323918453,1.63E-35
+ENSMUSG00000018581,Dnah11,"dynein, axonemal, heavy chain 11",,-4.987539034,1.87E-35
+ENSMUSG00000049265,Kcnk3,"potassium channel, subfamily K, member 3",,-3.2679952899,1.89E-35
+ENSMUSG00000045534,Kcna5,"potassium voltage-gated channel, shaker-related subfamily, member 5",,-5.4747175225,9.44E-35
+ENSMUSG00000042846,Lrrtm3,leucine rich repeat transmembrane neuronal 3,,-6.0488168116,1.30E-34
+ENSMUSG00000029522,Pla2g1b,"phospholipase A2, group IB, pancreas",,-5.0955713913,2.37E-34
+ENSMUSG00000072955,Tmsb15l,thymosin beta 15b like,,-2.1514017099,5.34E-34
+ENSMUSG00000019978,Epb4.1l2,erythrocyte membrane protein band 4.1 like 2,,-4.300711441,7.08E-34
+ENSMUSG00000028222,Calb1,calbindin 1,,-3.6910534134,8.24E-34
+ENSMUSG00000072849,Serpina1e,"serine (or cysteine) peptidase inhibitor, clade A, member 1E",,-6.1181075022,1.21E-33
+ENSMUSG00000030930,Chst15,carbohydrate (N-acetylgalactosamine 4-sulfate 6-O) sulfotransferase 15,,-4.8298543109,3.32E-33
+ENSMUSG00000026833,Olfm1,olfactomedin 1,,-2.8148658938,1.78E-32
+ENSMUSG00000026896,Ifih1,interferon induced with helicase C domain 1,,-3.4828348721,8.14E-32
+ENSMUSG00000055197,Fev,FEV (ETS oncogene family),1,-2.5093288644,1.12E-31
+ENSMUSG00000035540,Gc,group specific component,0,-3.016823875,7.01E-31
+ENSMUSG00000022766,Serpind1,"serine (or cysteine) peptidase inhibitor, clade D, member 1",,-5.6347275302,7.45E-31
+ENSMUSG00000021708,Rasgrf2,-,,-3.1610382475,9.47E-31
+ENSMUSG00000036422,Pcdh8,protocadherin 8,,-5.9616289515,1.54E-30
+ENSMUSG00000003153,Slc2a3,"solute carrier family 2 (facilitated glucose transporter), member 3",,-2.559181773,1.02E-29
+ENSMUSG00000037370,Enpp1,ectonucleotide pyrophosphatase/phosphodiesterase 1,,-2.1443239294,1.02E-29
+ENSMUSG00000052920,Prkg1,"protein kinase, cGMP-dependent, type I",,-5.6161069247,6.83E-29
+ENSMUSG00000020431,Adcy1,adenylate cyclase 1,,-5.1507569158,1.08E-28
+ENSMUSG00000029913,Prdm5,PR domain containing 5,1,-4.1006410425,1.33E-28
+ENSMUSG00000097203,4732419C18Rik,-,0,-2.1750678742,3.36E-28
+ENSMUSG00000038530,Rgs4,regulator of G-protein signaling 4,,-3.1213254702,3.36E-28
+ENSMUSG00000051022,Hs3st1,heparan sulfate (glucosamine) 3-O-sulfotransferase 1,,-5.6963154761,7.96E-28
+ENSMUSG00000039835,Nhsl1,NHS-like 1,,-2.6499242025,9.38E-28
+ENSMUSG00000057614,Gnai1,"guanine nucleotide binding protein (G protein), alpha inhibiting 1",,-2.3903865045,3.32E-27
+ENSMUSG00000059708,Akap17b,A kinase (PRKA) anchor protein 17B,,-3.1308416087,4.46E-27
+ENSMUSG00000040183,Ankrd6,ankyrin repeat domain 6,,-3.2853571309,5.52E-27
+ENSMUSG00000039384,Dusp10,dual specificity phosphatase 10,,-2.03723553,9.05E-27
+ENSMUSG00000025059,Gyk,glycerol kinase,,-4.2806876262,1.89E-26
+ENSMUSG00000054453,Sytl5,synaptotagmin-like 5,,-2.084007526,8.86E-26
+ENSMUSG00000018849,Wwc1,"WW, C2 and coiled-coil domain containing 1",,-3.1287633347,1.04E-25
+ENSMUSG00000065767,Gm23849,-,,-2.9394610504,5.40E-25
+ENSMUSG00000042745,Id1,inhibitor of DNA binding 1,1,-5.3932149843,8.50E-25
+ENSMUSG00000021613,Hapln1,hyaluronan and proteoglycan link protein 1,0,-3.3022123876,1.16E-24
+ENSMUSG00000031778,Cx3cl1,chemokine (C-X3-C motif) ligand 1,,-2.5631473233,1.22E-24
+ENSMUSG00000026824,Kcnj3,"potassium inwardly-rectifying channel, subfamily J, member 3",,-5.645501618,1.26E-24
+ENSMUSG00000027695,Pld1,phospholipase D1,,-2.0336508859,1.88E-24
+ENSMUSG00000071553,Cpa2,"carboxypeptidase A2, pancreatic",,-4.2473803882,4.31E-24
+ENSMUSG00000031673,Cdh11,cadherin 11,,-2.2925159006,4.32E-24
+ENSMUSG00000087056,Gm14004,-,,-4.2957510096,7.50E-24
+ENSMUSG00000006435,Neurl1a,neuralized E3 ubiquitin protein ligase 1A,,-3.301063529,8.80E-24
+ENSMUSG00000024990,Rbp4,"retinol binding protein 4, plasma",,-2.0668861467,9.76E-24
+ENSMUSG00000057329,Bcl2,B cell leukemia/lymphoma 2,,-4.0016562221,9.76E-24
+ENSMUSG00000037306,Man1c1,"mannosidase, alpha, class 1C, member 1",,-2.5647422801,1.37E-23
+ENSMUSG00000005397,Nid1,nidogen 1,,-5.6732039662,1.59E-23
+ENSMUSG00000038132,Rbm24,RNA binding motif protein 24,,-5.4384305855,1.75E-23
+ENSMUSG00000038112,AW551984,expressed sequence AW551984,,-3.6568952908,1.82E-23
+ENSMUSG00000070530,Wfdc16,WAP four-disulfide core domain 16,,-3.5815688567,2.77E-23
+ENSMUSG00000016349,Eef1a2,eukaryotic translation elongation factor 1 alpha 2,,-4.812840504,4.61E-23
+ENSMUSG00000030669,Calca,"calcitonin/calcitonin-related polypeptide, alpha",,-5.0393750048,6.85E-23
+ENSMUSG00000036295,Lrrn3,"leucine rich repeat protein 3, neuronal",,-6.0635725298,7.75E-23
+ENSMUSG00000019913,Sim1,single-minded homolog 1 (Drosophila),1,-2.7320264461,2.55E-22
+ENSMUSG00000063887,Nlgn1,neuroligin 1,0,-5.3813582949,2.90E-22
+ENSMUSG00000007872,Id3,inhibitor of DNA binding 3,1,-4.1327092029,7.31E-22
+ENSMUSG00000086040,Wipf3,"WAS/WASL interacting protein family, member 3",0,-4.2091447244,8.06E-22
+ENSMUSG00000051209,Gpr119,G-protein coupled receptor 119,,-2.6675042843,1.05E-21
+ENSMUSG00000000058,Cav2,caveolin 2,,-5.459230286,1.20E-21
+ENSMUSG00000061171,Slc38a11,"solute carrier family 38, member 11",,-3.320075676,1.34E-21
+ENSMUSG00000031565,Fgfr1,fibroblast growth factor receptor 1,,-2.2556072444,1.51E-21
+ENSMUSG00000097342,Gm26618,-,,-4.0467539425,1.91E-21
+ENSMUSG00000021098,4930447C04Rik,RIKEN cDNA 4930447C04 gene,,-3.5081620751,2.76E-21
+ENSMUSG00000032261,Sh3bgrl2,SH3 domain binding glutamic acid-rich protein like 2,,-4.7915329333,3.31E-21
+ENSMUSG00000031841,Cdh13,cadherin 13,,-4.7042118773,3.67E-21
+ENSMUSG00000017144,Rnd3,Rho family GTPase 3,,-3.6899433591,4.17E-21
+ENSMUSG00000033032,Afap1l1,actin filament associated protein 1-like 1,,-5.5672554505,4.75E-21
+ENSMUSG00000085603,Gm11346,-,,-2.506530495,5.53E-21
+ENSMUSG00000042607,Asb4,ankyrin repeat and SOCS box-containing 4,,-3.7419243021,1.10E-20
+ENSMUSG00000066687,Zbtb16,zinc finger and BTB domain containing 16,1,-5.1741583929,4.08E-20
+ENSMUSG00000013076,Amotl1,angiomotin-like 1,0,-2.0114764436,4.42E-20
+ENSMUSG00000021701,Plk2,polo-like kinase 2,,-2.9254012208,6.31E-20
+ENSMUSG00000042359,Osbpl6,oxysterol binding protein-like 6,,-2.2249919214,8.27E-20
+ENSMUSG00000000409,Lck,lymphocyte protein tyrosine kinase,,-4.1912757448,8.33E-20
+ENSMUSG00000038917,3930402G23Rik,-,,-3.9660614522,9.02E-20
+ENSMUSG00000097825,9630001P10Rik,-,,-3.407784161,1.86E-19
+ENSMUSG00000026678,Rgs5,regulator of G-protein signaling 5,,-5.5964741064,2.78E-19
+ENSMUSG00000079015,Serpina1c,"serine (or cysteine) peptidase inhibitor, clade A, member 1C",,-4.5736547073,5.16E-19
+ENSMUSG00000024052,Lpin2,lipin 2,,-2.3601155246,5.17E-19
+ENSMUSG00000045731,Pnoc,prepronociceptin,,-4.3164817828,5.26E-19
+ENSMUSG00000027239,Mdk,midkine,,-3.2573327223,6.35E-19
+ENSMUSG00000002944,Cd36,CD36 antigen,,-4.9338590447,6.85E-19
+ENSMUSG00000048402,Gli2,GLI-Kruppel family member GLI2,1,-5.1876023173,9.42E-19
+ENSMUSG00000042364,Snx18,sorting nexin 18,0,-2.0228930413,9.54E-19
+ENSMUSG00000021373,Cap2,"CAP, adenylate cyclase-associated protein, 2 (yeast)",,-5.3090439652,1.29E-18
+ENSMUSG00000025582,Nptx1,neuronal pentraxin 1,,-3.0194537925,1.98E-18
+ENSMUSG00000087201,Gm15261,-,,-3.8775245707,2.11E-18
+ENSMUSG00000040249,Lrp1,low density lipoprotein receptor-related protein 1,,-3.0272107881,2.34E-18
+ENSMUSG00000028076,Cd1d1,CD1d1 antigen,,-4.6013514944,4.92E-18
+ENSMUSG00000041921,Metap1d,methionyl aminopeptidase type 1D (mitochondrial),,-2.1125733599,5.94E-18
+ENSMUSG00000034762,Glis1,GLIS family zinc finger 1,1,-4.3658224329,8.64E-18
+ENSMUSG00000071656,Lrrn4cl,LRRN4 C-terminal like,0,-3.1308036867,1.02E-17
+ENSMUSG00000074923,Pak6,p21 protein (Cdc42/Rac)-activated kinase 6,,-2.6703844145,1.07E-17
+ENSMUSG00000015879,Fam184b,"family with sequence similarity 184, member B",,-5.3543159605,1.12E-17
+ENSMUSG00000059173,Pde1a,"phosphodiesterase 1A, calmodulin-dependent",,-3.5001720277,1.26E-17
+ENSMUSG00000045282,Tmem86b,transmembrane protein 86B,,-3.5307109649,1.40E-17
+ENSMUSG00000058174,Gm5148,predicted gene 5148,,-2.6764390296,1.45E-17
+ENSMUSG00000028766,Alpl,"alkaline phosphatase, liver/bone/kidney",,-5.2394323505,1.67E-17
+ENSMUSG00000058952,Cfi,complement component factor i,,-4.4561615428,2.12E-17
+ENSMUSG00000034738,Nostrin,nitric oxide synthase trafficker,,-3.0850643078,2.35E-17
+ENSMUSG00000024140,Epas1,endothelial PAS domain protein 1,,-2.5146932792,2.74E-17
+ENSMUSG00000041654,Slc39a11,"solute carrier family 39 (metal ion transporter), member 11",,-2.0099994514,3.19E-17
+ENSMUSG00000060572,Mfap2,microfibrillar-associated protein 2,,-2.3208074781,4.33E-17
+ENSMUSG00000062372,Otof,otoferlin,,-5.3244747852,4.42E-17
+ENSMUSG00000097039,Pvt1,-,,-2.5326947838,6.85E-17
+ENSMUSG00000029761,Cald1,caldesmon 1,,-2.0879559944,7.06E-17
+ENSMUSG00000039131,Gipc2,"GIPC PDZ domain containing family, member 2",,-3.0390703746,1.01E-16
+ENSMUSG00000032017,Grik4,"glutamate receptor, ionotropic, kainate 4",,-3.8663174356,1.03E-16
+ENSMUSG00000021069,Pygl,liver glycogen phosphorylase,,-3.022741915,1.33E-16
+ENSMUSG00000023328,Ache,acetylcholinesterase,,-4.9033073207,1.68E-16
+ENSMUSG00000024029,Tff3,"trefoil factor 3, intestinal",,-4.165026259,2.01E-16
+ENSMUSG00000049241,Hcar1,hydrocarboxylic acid receptor 1,,-3.9126335061,2.12E-16
+ENSMUSG00000038009,Dnajc22,"DnaJ (Hsp40) homolog, subfamily C, member 22",,-4.3474178323,2.23E-16
+ENSMUSG00000032334,Loxl1,lysyl oxidase-like 1,,-4.5410923424,2.26E-16
+ENSMUSG00000027800,Tm4sf1,transmembrane 4 superfamily member 1,,-4.2470223208,2.48E-16
+ENSMUSG00000061082,Plac1,placental specific protein 1,,-5.4780276813,2.62E-16
+ENSMUSG00000036533,Cdc42ep3,CDC42 effector protein (Rho GTPase binding) 3,,-2.9946782138,2.68E-16
+ENSMUSG00000024391,Apom,apolipoprotein M,,-4.7688961704,2.85E-16
+ENSMUSG00000039960,Rhou,"ras homolog gene family, member U",,-2.6849454291,3.07E-16
+ENSMUSG00000020019,Ntn4,netrin 4,,-3.5603609648,3.95E-16
+ENSMUSG00000037625,Cldn11,claudin 11,,-3.1778596026,4.54E-16
+ENSMUSG00000009114,2610028H24Rik,RIKEN cDNA 2610028H24 gene,,-4.8521973079,5.02E-16
+ENSMUSG00000086970,Bcas1os1,-,,-4.6240317595,5.12E-16
+ENSMUSG00000053025,Sv2b,synaptic vesicle glycoprotein 2 b,,-3.2317739496,5.65E-16
+ENSMUSG00000057802,Gm10030,-,,-4.3819516398,5.97E-16
+ENSMUSG00000035964,Tmem59l,transmembrane protein 59-like,,-3.0985984437,7.75E-16
+ENSMUSG00000023827,Agpat4,"1-acylglycerol-3-phosphate O-acyltransferase 4 (lysophosphatidic acid acyltransferase, delta)",,-2.1358814285,1.58E-15
+ENSMUSG00000020297,Nsg2,neuron specific gene family member 2,,-5.0415181154,1.69E-15
+ENSMUSG00000032854,Ugt8a,UDP galactosyltransferase 8A,,-3.2857881888,2.59E-15
+ENSMUSG00000022548,Apod,apolipoprotein D,,-2.2064723783,2.64E-15
+ENSMUSG00000019539,Rcn3,"reticulocalbin 3, EF-hand calcium binding domain",,-2.2992601355,2.68E-15
+ENSMUSG00000097762,4732463B04Rik,-,,-3.1317544778,2.70E-15
+ENSMUSG00000051159,Cited1,Cbp/p300-interacting transactivator with Glu/Asp-rich carboxy-terminal domain 1,,-4.225062661,2.78E-15
+ENSMUSG00000027878,Notch2,notch 2,,-2.9003553898,2.85E-15
+ENSMUSG00000015396,Cd83,CD83 antigen,,-4.4474698192,3.66E-15
+ENSMUSG00000024225,Clps,"colipase, pancreatic",,-2.7834948086,4.08E-15
+ENSMUSG00000043501,Lgals2,"lectin, galactose-binding, soluble 2",,-5.073806741,4.49E-15
+ENSMUSG00000042514,Klhl14,kelch-like 14,,-4.3765036879,5.78E-15
+ENSMUSG00000031323,Dmrtc1a,DMRT-like family C1a,,-2.4931757596,6.56E-15
+ENSMUSG00000002847,Pla1a,phospholipase A1 member A,,-3.4728493214,6.59E-15
+ENSMUSG00000071550,Wdr52,cilia and flagella associated protein 44,,-3.7945216882,6.85E-15
+ENSMUSG00000026235,Epha4,Eph receptor A4,,-4.2114981583,8.64E-15
+ENSMUSG00000015474,Ppt2,palmitoyl-protein thioesterase 2,,-2.3908169567,1.03E-14
+ENSMUSG00000031925,Maml2,mastermind like 2 (Drosophila),,-3.0749151706,1.56E-14
+ENSMUSG00000045589,Frrs1l,ferric-chelate reductase 1 like,,-3.5756343389,1.72E-14
+ENSMUSG00000023982,Guca1a,guanylate cyclase activator 1a (retina),,-2.7656100425,2.60E-14
+ENSMUSG00000066720,Cldn9,claudin 9,,-4.48312073,3.06E-14
+ENSMUSG00000038473,Nos1ap,nitric oxide synthase 1 (neuronal) adaptor protein,,-3.3283896273,4.18E-14
+ENSMUSG00000039913,Pak7,p21 protein (Cdc42/Rac)-activated kinase 7,,-4.1074395027,4.71E-14
+ENSMUSG00000039323,Igfbp2,insulin-like growth factor binding protein 2,,-4.0921152887,6.88E-14
+ENSMUSG00000056174,Col8a2,"collagen, type VIII, alpha 2",,-4.5680610882,6.92E-14
+ENSMUSG00000044694,2010007H06Rik,-,,-4.6876226517,9.48E-14
+ENSMUSG00000051855,Mest,mesoderm specific transcript,,-3.2844411305,1.03E-13
+ENSMUSG00000073910,Mob3b,MOB kinase activator 3B,,-3.1686782152,1.25E-13
+ENSMUSG00000024511,Rab27b,"RAB27B, member RAS oncogene family",,-3.6628737688,1.34E-13
+ENSMUSG00000044034,Npb,neuropeptide B,,-3.9450976546,1.72E-13
+ENSMUSG00000007655,Cav1,"caveolin 1, caveolae protein",,-5.4056293929,2.03E-13
+ENSMUSG00000002459,Rgs20,regulator of G-protein signaling 20,,-2.7292363794,2.13E-13
+ENSMUSG00000031517,Gpm6a,glycoprotein m6a,,-4.9634349853,2.23E-13
+ENSMUSG00000067028,Cntnap5b,contactin associated protein-like 5B,,-5.1414307984,2.34E-13
+ENSMUSG00000094430,Gm933,predicted gene 933,,-4.0269915646,3.58E-13
+ENSMUSG00000021414,Fam217a,"family with sequence similarity 217, member A",,-4.7871762861,4.21E-13
+ENSMUSG00000063611,Gm10134,-,,-2.0265589146,4.44E-13
+ENSMUSG00000026295,Spp2,secreted phosphoprotein 2,,-4.6793416697,4.60E-13
+ENSMUSG00000000627,Sema4f,"sema domain, immunoglobulin domain (Ig), TM domain, and short cytoplasmic domain",,-4.0297686361,4.82E-13
+ENSMUSG00000051934,Spats2,"spermatogenesis associated, serine-rich 2",,-2.3280586106,5.83E-13
+ENSMUSG00000027993,Trim2,tripartite motif-containing 2,,-2.3005735507,6.92E-13
+ENSMUSG00000099291,Rnu3b3,-,,-2.2231133606,9.29E-13
+ENSMUSG00000097514,Gm17619,-,,-4.0343629119,9.37E-13
+ENSMUSG00000097579,Gm26799,-,,-2.1012831024,1.11E-12
+ENSMUSG00000041540,Sox5,SRY (sex determining region Y)-box 5,1,-2.4497033648,1.25E-12
+ENSMUSG00000021228,Acot3,acyl-CoA thioesterase 3,0,-4.6882501749,2.40E-12
+ENSMUSG00000032940,Rbm11,RNA binding motif protein 11,,-2.633063132,2.60E-12
+ENSMUSG00000019853,Hebp2,heme binding protein 2,,-4.2636695341,4.37E-12
+ENSMUSG00000086911,Gm12027,-,,-4.8009589355,5.62E-12
+ENSMUSG00000073586,Gm10543,-,-,-3.0736866391,5.95E-12
+ENSMUSG00000073293,Nudt10,nudix (nucleoside diphosphate linked moiety X)-type motif 10,0,-2.515579036,6.05E-12
+ENSMUSG00000037287,Tbcel,tubulin folding cofactor E-like,,-2.3748389997,6.73E-12
+ENSMUSG00000027796,Smad9,SMAD family member 9,1,-2.5252809623,7.22E-12
+ENSMUSG00000037211,Spry1,sprouty homolog 1 (Drosophila),0,-4.5174388988,7.51E-12
+ENSMUSG00000036098,Myrf,myelin regulatory factor,1,-2.3982161731,1.25E-11
+ENSMUSG00000040373,Cacng5,"calcium channel, voltage-dependent, gamma subunit 5",0,-4.0485086336,1.47E-11
+ENSMUSG00000024386,Proc,protein C,,-3.0878687974,1.48E-11
+ENSMUSG00000026058,Khdrbs2,"KH domain containing, RNA binding, signal transduction associated 2",,-2.353483631,1.64E-11
+ENSMUSG00000035041,Creb3l3,cAMP responsive element binding protein 3-like 3,1,-4.7486194381,1.79E-11
+ENSMUSG00000020904,Wdr16,cilia and flagella associated protein 52,0,-4.1805424202,2.21E-11
+ENSMUSG00000017723,Wfdc2,WAP four-disulfide core domain 2,,-4.3698226752,2.25E-11
+ENSMUSG00000020607,Fam84a,"family with sequence similarity 84, member A",,-2.7962826737,2.39E-11
+ENSMUSG00000027376,Prom2,prominin 2,,-3.2791286997,3.45E-11
+ENSMUSG00000018593,Sparc,secreted acidic cysteine rich glycoprotein,,-2.1269719096,5.06E-11
+ENSMUSG00000021219,Rgs6,regulator of G-protein signaling 6,,-3.6865909617,7.12E-11
+ENSMUSG00000028078,Dclk2,doublecortin-like kinase 2,,-2.5407056545,7.12E-11
+ENSMUSG00000097243,Gm26908,-,,-2.064814615,7.38E-11
+ENSMUSG00000040938,Slc16a11,"solute carrier family 16 (monocarboxylic acid transporters), member 11",,-2.3229173476,7.64E-11
+ENSMUSG00000079259,Trim71,tripartite motif-containing 71,,-2.7093833962,8.67E-11
+ENSMUSG00000030029,Lrig1,leucine-rich repeats and immunoglobulin-like domains 1,,-2.2543544907,9.45E-11
+ENSMUSG00000025810,Nrp1,neuropilin 1,,-3.0765300234,1.00E-10
+ENSMUSG00000020173,Cobl,cordon-bleu WH2 repeat,,-2.5825750785,1.00E-10
+ENSMUSG00000064016,Gm648,predicted gene 648,,-3.1901958395,1.33E-10
+ENSMUSG00000068037,Mas1,MAS1 oncogene,,-3.6858730951,1.51E-10
+ENSMUSG00000098925,Rnu3b2,-,,-2.3328804111,1.82E-10
+ENSMUSG00000049555,Tmie,transmembrane inner ear,,-3.325446533,1.96E-10
+ENSMUSG00000022762,Ncam2,neural cell adhesion molecule 2,,-3.720573612,2.52E-10
+ENSMUSG00000038456,Dennd2a,DENN/MADD domain containing 2A,,-2.8445833606,3.62E-10
+ENSMUSG00000015846,Rxra,retinoid X receptor alpha,1,-2.11736934,3.81E-10
+ENSMUSG00000029359,Tesc,tescalcin,0,-2.6875627613,4.88E-10
+ENSMUSG00000095306,Gm21807,-,,-3.859904334,6.42E-10
+ENSMUSG00000074661,Pde4d,-,-,-2.9310143284,6.57E-10
+ENSMUSG00000046634,Pkd1l1,polycystic kidney disease 1 like 1,0,-3.039217222,6.61E-10
+ENSMUSG00000027864,Ptgfrn,prostaglandin F2 receptor negative regulator,,-3.7334125006,6.75E-10
+ENSMUSG00000031130,Brs3,bombesin-like receptor 3,,-4.6502141776,6.83E-10
+ENSMUSG00000071679,Zcchc16,"zinc finger, CCHC domain containing 16",,-3.4746371004,7.30E-10
+ENSMUSG00000100798,RP24-73K7.4,-,,-4.0943698962,8.23E-10
+ENSMUSG00000053980,Gm9930,-,,-3.4172446918,8.75E-10
+ENSMUSG00000033350,Chst2,carbohydrate sulfotransferase 2,,-2.2671506936,9.96E-10
+ENSMUSG00000054013,Tmem179,transmembrane protein 179,,-2.7422515731,1.03E-09
+ENSMUSG00000006567,Atp7b,"ATPase, Cu++ transporting, beta polypeptide",,-2.679488854,1.05E-09
+ENSMUSG00000027994,Ccdc109b,coiled-coil domain containing 109B,,-3.0943689819,1.17E-09
+ENSMUSG00000020447,Npc1l1,NPC1-like 1,,-4.3693655858,1.28E-09
+ENSMUSG00000069919,Hba-a1,"hemoglobin alpha, adult chain 1",,-2.4193093391,1.36E-09
+ENSMUSG00000047419,Cmya5,cardiomyopathy associated 5,,-3.1566589686,1.39E-09
+ENSMUSG00000031758,Cdyl2,"chromodomain protein, Y chromosome-like 2",,-2.0614508795,1.50E-09
+ENSMUSG00000035459,Stab2,stabilin 2,,-3.5456483604,1.59E-09
+ENSMUSG00000023964,Calcr,calcitonin receptor,,-4.0921583711,1.71E-09
+ENSMUSG00000079045,Prox1os,-,,-2.963625533,1.76E-09
+ENSMUSG00000026398,Nr5a2,"nuclear receptor subfamily 5, group A, member 2",1,-3.5255209325,1.80E-09
+ENSMUSG00000025272,Tro,trophinin,0,-2.7274532093,1.96E-09
+ENSMUSG00000022091,Sorbs3,sorbin and SH3 domain containing 3,,-2.9508800698,2.10E-09
+ENSMUSG00000063873,Slc24a3,"solute carrier family 24 (sodium/potassium/calcium exchanger), member 3",,-3.9632936458,2.45E-09
+ENSMUSG00000051041,Olfml1,olfactomedin-like 1,,-4.4857866302,2.46E-09
+ENSMUSG00000040666,Sh3bgr,SH3-binding domain glutamic acid-rich protein,,-2.1340039173,2.59E-09
+ENSMUSG00000021994,Wnt5a,"wingless-type MMTV integration site family, member 5A",,-2.8951776064,2.62E-09
+ENSMUSG00000032006,Pdgfd,"platelet-derived growth factor, D polypeptide",,-4.2167552054,3.41E-09
+ENSMUSG00000065944,Rnu2-10,-,,-2.1622376313,4.01E-09
+ENSMUSG00000090555,Gm8893,-,,-3.2957366319,4.80E-09
+ENSMUSG00000097222,1010001N08Rik,-,,-3.3524341369,5.13E-09
+ENSMUSG00000082088,Gm15753,-,,-3.0723095436,5.14E-09
+ENSMUSG00000079669,Gm17396,-,,-2.1681845239,5.20E-09
+ENSMUSG00000026272,Agxt,alanine-glyoxylate aminotransferase,,-4.301386014,5.61E-09
+ENSMUSG00000031563,Wwc2,"WW, C2 and coiled-coil domain containing 2",,-3.6785547346,5.91E-09
+ENSMUSG00000052187,Hbb-y,"hemoglobin Y, beta-like embryonic chain",,-3.7677936819,6.15E-09
+ENSMUSG00000034127,Tspan8,tetraspanin 8,,-2.5888061603,1.01E-08
+ENSMUSG00000072949,Acot1,acyl-CoA thioesterase 1,,-2.7758922274,1.03E-08
+ENSMUSG00000047793,Sned1,"sushi, nidogen and EGF-like domains 1",,-3.2867541769,1.12E-08
+ENSMUSG00000080862,Gm14523,-,,-3.4079056742,1.71E-08
+ENSMUSG00000003436,Dll3,delta-like 3 (Drosophila),,-3.4013432756,1.96E-08
+ENSMUSG00000037254,Itih2,"inter-alpha trypsin inhibitor, heavy chain 2",,-3.8079819022,1.97E-08
+ENSMUSG00000036095,Dgkb,"diacylglycerol kinase, beta",,-2.9185767412,2.02E-08
+ENSMUSG00000017453,Pipox,pipecolic acid oxidase,,-4.0277155215,2.04E-08
+ENSMUSG00000036585,Fgf1,fibroblast growth factor 1,,-2.7004794794,2.32E-08
+ENSMUSG00000031957,Ctrb1,chymotrypsinogen B1,,-2.4220834102,2.42E-08
+ENSMUSG00000069917,Hba-a2,"hemoglobin alpha, adult chain 2",,-2.3341248589,2.54E-08
+ENSMUSG00000021127,Zfp36l1,"zinc finger protein 36, C3H type-like 1",,-3.2140976038,2.63E-08
+ENSMUSG00000004383,Large,like-glycosyltransferase,,-3.1770683577,2.63E-08
+ENSMUSG00000085368,Gm16188,-,,-3.4617106644,3.23E-08
+ENSMUSG00000040187,Arntl2,aryl hydrocarbon receptor nuclear translocator-like 2,1,-2.7645749256,3.27E-08
+ENSMUSG00000049281,Scn3b,"sodium channel, voltage-gated, type III, beta",0,-2.7288551502,3.29E-08
+ENSMUSG00000053861,Gm9925,-,,-2.9930782468,4.08E-08
+ENSMUSG00000019929,Dcn,decorin,,-3.7117288841,4.76E-08
+ENSMUSG00000037709,Fam13a,"family with sequence similarity 13, member A",,-3.3436890865,4.86E-08
+ENSMUSG00000051910,Sox6,SRY (sex determining region Y)-box 6,1,-2.6171035379,5.01E-08
+ENSMUSG00000048752,Prss50,"protease, serine 50",0,-3.0452905239,5.56E-08
+ENSMUSG00000028527,Ak4,adenylate kinase 4,,-3.7256508359,5.72E-08
+ENSMUSG00000027513,Pck1,"phosphoenolpyruvate carboxykinase 1, cytosolic",,-2.8698009114,6.90E-08
+ENSMUSG00000070304,Scn2b,"sodium channel, voltage-gated, type II, beta",,-2.1358131228,7.87E-08
+ENSMUSG00000003032,Klf4,Kruppel-like factor 4 (gut),1,-2.0907668461,8.64E-08
+ENSMUSG00000018211,Wfdc15b,WAP four-disulfide core domain 15B,0,-3.6989660651,8.97E-08
+ENSMUSG00000037169,Mycn,"v-myc myelocytomatosis viral related oncogene, neuroblastoma derived (avian)",1,-3.228657781,9.66E-08
+ENSMUSG00000054446,Cpa1,"carboxypeptidase A1, pancreatic",0,-3.1110157943,1.13E-07
+ENSMUSG00000086298,Gm11716,-,,-3.6529195064,1.55E-07
+ENSMUSG00000064115,Cadm2,cell adhesion molecule 2,,-3.2121207929,1.62E-07
+ENSMUSG00000055003,Lrtm2,leucine-rich repeats and transmembrane domains 2,,-2.4520428628,1.63E-07
+ENSMUSG00000024992,Pde6c,"phosphodiesterase 6C, cGMP specific, cone, alpha prime",,-2.7644731036,1.66E-07
+ENSMUSG00000056481,Cd248,"CD248 antigen, endosialin",,-3.7932267865,1.69E-07
+ENSMUSG00000021684,Pde8b,phosphodiesterase 8B,,-2.3989924442,2.05E-07
+ENSMUSG00000031239,Itm2a,integral membrane protein 2A,,-3.0471288807,2.07E-07
+ENSMUSG00000082431,Gm7110,-,,-2.9314706154,2.28E-07
+ENSMUSG00000056306,Sertm1,serine rich and transmembrane domain containing 1,,-4.0662502536,2.59E-07
+ENSMUSG00000045348,Nyap1,neuronal tyrosine-phosphorylated phosphoinositide 3-kinase adaptor 1,,-2.7284721232,2.67E-07
+ENSMUSG00000052305,Hbb-bs,"hemoglobin, beta adult major chain",,-2.4394736806,2.81E-07
+ENSMUSG00000043168,4930426D05Rik,-,,-2.9318612513,2.92E-07
+ENSMUSG00000079146,Gm15353,-,,-2.3833420292,3.43E-07
+ENSMUSG00000071113,Mboat4,membrane bound O-acyltransferase domain containing 4,,-3.1587963979,3.73E-07
+ENSMUSG00000087088,Gm16638,-,,-2.7272472945,4.01E-07
+ENSMUSG00000042179,Pnliprp1,pancreatic lipase related protein 1,,-2.4890024113,4.22E-07
+ENSMUSG00000001473,Tubb6,"tubulin, beta 6 class V",,-2.0900658592,4.34E-07
+ENSMUSG00000024827,Gldc,glycine decarboxylase,,-2.3845043906,4.45E-07
+ENSMUSG00000047415,Gpr68,G protein-coupled receptor 68,,-2.0095457042,4.82E-07
+ENSMUSG00000050777,Tmem37,transmembrane protein 37,,-2.8875456444,7.77E-07
+ENSMUSG00000060559,Gm10083,-,,-2.0820309895,8.17E-07
+ENSMUSG00000023247,Guca2a,guanylate cyclase activator 2a (guanylin),,-3.5349916146,9.37E-07
+ENSMUSG00000028469,Npr2,natriuretic peptide receptor 2,,-2.2190439399,9.58E-07
+ENSMUSG00000035283,Adrb1,"adrenergic receptor, beta 1",,-3.6628093476,9.98E-07
+ENSMUSG00000028738,Tas1r2,"taste receptor, type 1, member 2",,-3.3027462458,1.08E-06
+ENSMUSG00000087518,Gm13561,-,,-2.9197986276,1.14E-06
+ENSMUSG00000019899,Lama2,"laminin, alpha 2",,-3.8117304887,1.29E-06
+ENSMUSG00000098050,Gm5345,-,,-2.2099927194,1.48E-06
+ENSMUSG00000020140,Lgr5,leucine rich repeat containing G protein coupled receptor 5,,-2.3020089882,1.86E-06
+ENSMUSG00000029757,Dync1i1,dynein cytoplasmic 1 intermediate chain 1,,-2.3191145245,1.92E-06
+ENSMUSG00000058579,Cela2a,"chymotrypsin-like elastase family, member 2A",,-2.7568030778,2.00E-06
+ENSMUSG00000079559,Gm684,predicted gene 684,,-3.6856950853,2.16E-06
+ENSMUSG00000080774,Gm9143,-,,-2.8199787397,2.16E-06
+ENSMUSG00000012350,Ehf,ets homologous factor,1,-2.5147454383,2.17E-06
+ENSMUSG00000078251,Gm16487,-,0,-3.3303112935,2.44E-06
+ENSMUSG00000022435,Upk3a,uroplakin 3A,,-3.109023237,2.48E-06
+ENSMUSG00000055805,Fmnl1,formin-like 1,,-2.0410736027,2.49E-06
+ENSMUSG00000085198,4933416E03Rik,-,,-3.0521491844,2.83E-06
+ENSMUSG00000024866,Acy3,aspartoacylase (aminoacylase) 3,,-2.9538945402,3.69E-06
+ENSMUSG00000044626,Liph,"lipase, member H",,-2.6640511799,4.19E-06
+ENSMUSG00000016255,Tubb1,"tubulin, beta 1 class VI",,-2.8042166447,4.27E-06
+ENSMUSG00000070509,Rgma,repulsive guidance molecule family member A,,-2.526376394,4.98E-06
+ENSMUSG00000050105,Grrp1,glycine/arginine rich protein 1,,-3.4521774357,4.99E-06
+ENSMUSG00000031503,Col4a2,"collagen, type IV, alpha 2",,-3.0751491559,5.02E-06
+ENSMUSG00000054932,Afp,alpha fetoprotein,,-2.4279846324,5.03E-06
+ENSMUSG00000097113,Gm19705,-,,-2.1078050797,5.21E-06
+ENSMUSG00000031616,Ednra,endothelin receptor type A,,-3.2737103021,6.17E-06
+ENSMUSG00000015305,Sash1,SAM and SH3 domain containing 1,,-2.0246024029,6.28E-06
+ENSMUSG00000085962,Gm16984,-,,-2.0354228905,6.58E-06
+ENSMUSG00000092371,Gm20511,-,,-2.9664443054,7.31E-06
+ENSMUSG00000019647,Sema6a,"sema domain, transmembrane domain (TM), and cytoplasmic domain, (semaphorin) 6A",,-2.1477257233,8.86E-06
+ENSMUSG00000020052,Ascl1,achaete-scute complex homolog 1 (Drosophila),1,-3.0457938699,9.42E-06
+ENSMUSG00000004633,Chn2,chimerin 2,0,-2.268054916,1.04E-05
+ENSMUSG00000051335,Gfod1,glucose-fructose oxidoreductase domain containing 1,,-2.4987203783,1.10E-05
+ENSMUSG00000041710,Trpc5,"transient receptor potential cation channel, subfamily C, member 5",,-2.820730636,1.12E-05
+ENSMUSG00000086308,G630016G05Rik,-,,-2.47799183,1.16E-05
+ENSMUSG00000035473,Galm,galactose mutarotase,,-3.4726666059,1.32E-05
+ENSMUSG00000026730,Pter,phosphotriesterase related,,-2.7993541459,1.32E-05
+ENSMUSG00000030022,Adamts9,"a disintegrin-like and metallopeptidase (reprolysin type) with thrombospondin type 1 motif, 9",,-2.5720235875,1.35E-05
+ENSMUSG00000052852,Reep1,receptor accessory protein 1,,-2.8172071038,1.40E-05
+ENSMUSG00000096970,2210017G18Rik,-,,-2.678351003,1.49E-05
+ENSMUSG00000038370,Pcp4l1,Purkinje cell protein 4-like 1,,-2.7497098762,1.55E-05
+ENSMUSG00000057163,Prss2,"protease, serine 2",,-2.4373433017,1.72E-05
+ENSMUSG00000061013,Mkx,mohawk homeobox,1,-2.5085858064,1.75E-05
+ENSMUSG00000032246,Calml4,calmodulin-like 4,0,-2.7678334247,1.76E-05
+ENSMUSG00000043259,Fam13c,"family with sequence similarity 13, member C",,-3.2672763609,1.97E-05
+ENSMUSG00000028373,Astn2,astrotactin 2,,-2.6226072172,2.10E-05
+ENSMUSG00000056073,Grik2,"glutamate receptor, ionotropic, kainate 2 (beta 2)",,-3.3059574177,2.11E-05
+ENSMUSG00000028005,Gucy1b3,"guanylate cyclase 1, soluble, beta 3",,-2.5760542317,2.27E-05
+ENSMUSG00000024778,Fas,Fas (TNF receptor superfamily member 6),,-3.4468677078,2.27E-05
+ENSMUSG00000036264,Fstl4,follistatin-like 4,,-3.4538789932,2.29E-05
+ENSMUSG00000006369,Fbln1,fibulin 1,,-2.2373437484,2.36E-05
+ENSMUSG00000040152,Thbs1,thrombospondin 1,,-3.090957701,2.45E-05
+ENSMUSG00000101483,RP23-440M14.1,-,,-2.5512021449,2.60E-05
+ENSMUSG00000029368,Alb,albumin,,-2.8910570398,2.68E-05
+ENSMUSG00000027676,Ccdc39,coiled-coil domain containing 39,,-2.1102064951,3.06E-05
+ENSMUSG00000024713,Pcsk5,proprotein convertase subtilisin/kexin type 5,,-3.1859986987,3.09E-05
+ENSMUSG00000021846,Peli2,pellino 2,,-2.3591568494,3.11E-05
+ENSMUSG00000003934,Efnb3,ephrin B3,,-2.2515854043,3.31E-05
+ENSMUSG00000022269,March11,membrane-associated ring finger (C3HC4) 11,,-3.1370735405,3.43E-05
+ENSMUSG00000037627,Rgs22,regulator of G-protein signalling 22,,-2.8981272662,3.54E-05
+ENSMUSG00000047878,A4galt,"alpha 1,4-galactosyltransferase",,-3.1803917913,3.71E-05
+ENSMUSG00000020704,Asic2,acid-sensing (proton-gated) ion channel 2,,-2.5251881953,3.84E-05
+ENSMUSG00000020609,Apob,apolipoprotein B,,-2.6210417894,3.89E-05
+ENSMUSG00000087184,Gm11650,-,,-3.3032218989,4.07E-05
+ENSMUSG00000030757,Zkscan2,zinc finger with KRAB and SCAN domains 2,1,-2.0716336541,4.83E-05
+ENSMUSG00000036912,Piwil4,piwi-like RNA-mediated gene silencing 4,0,-2.3745421047,4.94E-05
+ENSMUSG00000078925,D030018L15Rik,-,,-2.8110868367,5.89E-05
+ENSMUSG00000022696,Sidt1,"SID1 transmembrane family, member 1",,-3.1510756084,5.91E-05
+ENSMUSG00000054106,Try4,trypsin 4,,-2.7725261898,5.96E-05
+ENSMUSG00000021647,Cartpt,CART prepropeptide,,-2.8551218467,6.08E-05
+ENSMUSG00000023031,Cela1,"chymotrypsin-like elastase family, member 1",,-2.3599046227,6.32E-05
+ENSMUSG00000057378,Ryr3,ryanodine receptor 3,,-2.1195878395,6.78E-05
+ENSMUSG00000034266,Batf,"basic leucine zipper transcription factor, ATF-like",1,-3.3105181989,6.78E-05
+ENSMUSG00000032902,Slc16a1,"solute carrier family 16 (monocarboxylic acid transporters), member 1",0,-2.2629726684,6.99E-05
+ENSMUSG00000036902,Neto2,neuropilin (NRP) and tolloid (TLL)-like 2,,-2.5044687361,7.18E-05
+ENSMUSG00000073565,Prr16,proline rich 16,,-3.3708990964,7.31E-05
+ENSMUSG00000020429,Igfbp1,insulin-like growth factor binding protein 1,,-3.3596227228,7.85E-05
+ENSMUSG00000097922,4930448N21Rik,-,,-2.5734400691,8.32E-05
+ENSMUSG00000054034,Tceal5,transcription elongation factor A (SII)-like 5,,-2.8007564616,8.48E-05
+ENSMUSG00000032925,Itgbl1,"integrin, beta-like 1",,-3.2008039677,8.62E-05
+ENSMUSG00000038540,Tmc3,transmembrane channel-like gene family 3,,-2.3751330475,9.03E-05
+ENSMUSG00000047261,Gap43,growth associated protein 43,,-2.8401668875,0.0001050023
+ENSMUSG00000059654,Reg1,regenerating islet-derived 1,,-2.47856159,0.0001077181
+ENSMUSG00000032766,Gng11,"guanine nucleotide binding protein (G protein), gamma 11",,-2.9920277586,0.0001094303
+ENSMUSG00000054720,Lrrc8c,"leucine rich repeat containing 8 family, member C",,-2.1256557206,0.0001156469
+ENSMUSG00000028777,Gnat3,"guanine nucleotide binding protein, alpha transducing 3",,-3.201232664,0.0001244915
+ENSMUSG00000031714,Gab1,growth factor receptor bound protein 2-associated protein 1,,-2.1300299055,0.0001261271
+ENSMUSG00000022040,Ephx2,"epoxide hydrolase 2, cytoplasmic",,-2.2928649837,0.0001367418
+ENSMUSG00000021999,Cpb2,carboxypeptidase B2 (plasma),,-2.1867130957,0.0001371877
+ENSMUSG00000000903,Vpreb3,pre-B lymphocyte gene 3,,-2.8928993397,0.0001446834
+ENSMUSG00000040649,Rimklb,ribosomal modification protein rimK-like family member B,,-2.6373321956,0.0001471337
+ENSMUSG00000078252,Krtap17-1,keratin associated protein 17-1,,-2.3079145954,0.00014825
+ENSMUSG00000019893,Ros1,Ros1 proto-oncogene,,-3.0367458634,0.0001509291
+ENSMUSG00000024663,Rab3il1,RAB3A interacting protein (rabin3)-like 1,,-2.2315848108,0.0001531313
+ENSMUSG00000092262,Gm20434,-,-,-2.6827937767,0.0001714918
+ENSMUSG00000044647,Csrnp3,cysteine-serine-rich nuclear protein 3,0,-2.1989927303,0.0001763145
+ENSMUSG00000044528,Tram1l1,translocation associated membrane protein 1-like 1,,-2.1804553501,0.0001905773
+ENSMUSG00000025075,Habp2,hyaluronic acid binding protein 2,,-2.9081545974,0.0002121617
+ENSMUSG00000026100,Mstn,myostatin,,-3.1330989436,0.0002144518
+ENSMUSG00000097572,Gm26797,-,,-2.209856187,0.0002327714
+ENSMUSG00000079564,Gm11149,-,,-2.2561194005,0.0002451543
+ENSMUSG00000030244,Gys2,glycogen synthase 2,,-3.1237075552,0.0002627732
+ENSMUSG00000085130,Gm11417,-,,-2.0510186135,0.0002825809
+ENSMUSG00000033308,Dpyd,dihydropyrimidine dehydrogenase,,-2.2022502499,0.0002923931
+ENSMUSG00000010476,Ebf3,early B cell factor 3,1,-2.5279338192,0.0003054572
+ENSMUSG00000053897,Slc39a8,"solute carrier family 39 (metal ion transporter), member 8",0,-2.1408413082,0.0003054572
+ENSMUSG00000035357,Pdzrn3,PDZ domain containing RING finger 3,,-2.0873218736,0.0003221779
+ENSMUSG00000084628,Gm22613,-,,-2.7368386083,0.0003580304
+ENSMUSG00000026971,Itgb6,integrin beta 6,,-2.1943761747,0.0003678449
+ENSMUSG00000014444,Piezo1,piezo-type mechanosensitive ion channel component 1,,-2.7550286904,0.0003705144
+ENSMUSG00000034457,Eda2r,ectodysplasin A2 receptor,,-2.8816011148,0.0004238933
+ENSMUSG00000072812,Ahnak2,-,,-3.0639605982,0.0004331778
+ENSMUSG00000023433,Cela3b,"chymotrypsin-like elastase family, member 3B",,-2.2813805836,0.0004595511
+ENSMUSG00000024907,Gal,galanin,,-2.1853863976,0.0004958142
+ENSMUSG00000041673,Lrrc18,leucine rich repeat containing 18,,-2.3414562993,0.0005152422
+ENSMUSG00000032083,Apoa1,apolipoprotein A-I,,-2.5312501496,0.0005257267
+ENSMUSG00000029530,Ccr9,chemokine (C-C motif) receptor 9,,-2.028288658,0.0005264199
+ENSMUSG00000035954,Dock4,dedicator of cytokinesis 4,,-2.1462592382,0.0005373906
+ENSMUSG00000051246,Msantd1,Myb/SANT-like DNA-binding domain containing 1,,-2.5940252374,0.0005560632
+ENSMUSG00000021620,Acot12,acyl-CoA thioesterase 12,,-2.8011893649,0.0005633434
+ENSMUSG00000100618,RP23-188J8.3,-,,-2.8436207309,0.00060042
+ENSMUSG00000004665,Cnn2,calponin 2,,-2.4393993354,0.0006209649
+ENSMUSG00000029802,Abcg2,"ATP-binding cassette, sub-family G (WHITE), member 2",,-2.2021519433,0.0006540132
+ENSMUSG00000027431,Scp2d1,SCP2 sterol-binding domain containing 1,,-2.0054142469,0.0006665097
+ENSMUSG00000052477,C130026I21Rik,RIKEN cDNA C130026I21 gene,,-2.4063881171,0.000713856
+ENSMUSG00000025082,Vwa2,von Willebrand factor A domain containing 2,,-2.7271040873,0.0007798827
+ENSMUSG00000038775,Vill,villin-like,,-2.9009635933,0.000784499
+ENSMUSG00000051124,Gimap9,"GTPase, IMAP family member 9",,-2.5350020728,0.0008020944
+ENSMUSG00000030208,Emp1,epithelial membrane protein 1,,-2.6966135896,0.0008054831
+ENSMUSG00000066196,Spag8,sperm associated antigen 8,,-2.3459630052,0.0008512774
+ENSMUSG00000050447,Lypd6,LY6/PLAUR domain containing 6,,-2.5627256995,0.0009075676
+ENSMUSG00000073940,Hbb-bt,"hemoglobin, beta adult major chain",,-2.0530938361,0.0009433529
+ENSMUSG00000063430,Wscd2,WSC domain containing 2,,-2.3016848269,0.0010502767
+ENSMUSG00000048612,Myof,myoferlin,,-2.1253789992,0.0010805554
+ENSMUSG00000017309,Cd300lg,CD300 antigen like family member G,,-2.3179895586,0.0011129609
+ENSMUSG00000011589,Fsd1,fibronectin type 3 and SPRY domain-containing protein,,-2.0273722293,0.0011203244
+ENSMUSG00000085568,Gm14858,-,,-2.2091085269,0.001126389
+ENSMUSG00000030359,Pzp,pregnancy zone protein,,-2.2645495906,0.0011461663
+ENSMUSG00000055818,A230083G16Rik,-,,-2.1417426395,0.0011650542
+ENSMUSG00000028464,Tpm2,"tropomyosin 2, beta",,-2.8248591064,0.0011890102
+ENSMUSG00000050875,A730017C20Rik,RIKEN cDNA A730017C20 gene,,-2.7005003149,0.0012195285
+ENSMUSG00000032978,Guca2b,guanylate cyclase activator 2b (retina),,-2.7860170767,0.0012425971
+ENSMUSG00000089924,Gm15689,-,,-2.5995362557,0.0012667196
+ENSMUSG00000074623,Gm826,predicted gene 826,,-2.2841538023,0.0012752853
+ENSMUSG00000027965,Olfm3,olfactomedin 3,,-2.775418907,0.0013315231
+ENSMUSG00000055547,Apobec4,"apolipoprotein B mRNA editing enzyme, catalytic polypeptide-like 4 (putative)",,-2.0149351677,0.0013796701
+ENSMUSG00000097644,Gm26862,-,,-2.2704380246,0.001457457
+ENSMUSG00000041649,Klf8,Kruppel-like factor 8,1,-2.1070101443,0.0014836363
+ENSMUSG00000044165,Bcl2l15,BCLl2-like 15,0,-2.5251798378,0.0016005597
+ENSMUSG00000086490,Gm12292,-,,-2.5675386365,0.0017252769
+ENSMUSG00000092402,Gm20485,-,,-2.5767333291,0.0017541815
+ENSMUSG00000085347,Hk1os,-,,-2.6737624861,0.0017647734
+ENSMUSG00000021944,Gata4,GATA binding protein 4,1,-2.4147583822,0.002228091
+ENSMUSG00000032081,Apoc3,apolipoprotein C-III,0,-2.4422154704,0.0024052212
+ENSMUSG00000033192,Lpcat2,lysophosphatidylcholine acyltransferase 2,,-2.6400652265,0.0026370584
+ENSMUSG00000060429,Sntb1,"syntrophin, basic 1",,-2.6188319899,0.002874586
+ENSMUSG00000038199,4931409K22Rik,RIKEN cDNA 4931409K22 gene,,-2.5854590233,0.0028905276
+ENSMUSG00000086043,Gm12473,-,,-2.0717458016,0.0029792473
+ENSMUSG00000087601,Uchl1os,-,,-2.1479255078,0.0032487429
+ENSMUSG00000032532,Cck,cholecystokinin,,-2.1506314963,0.0032715395
+ENSMUSG00000097635,Gm26826,-,,-2.5392822432,0.0033776517
+ENSMUSG00000030584,Dpf1,"D4, zinc and double PHD fingers family 1",1,-2.0523176862,0.0034811198
+ENSMUSG00000022441,Efcab6,EF-hand calcium binding domain 6,0,-2.5715708802,0.0034840754
+ENSMUSG00000035448,Ccr3,chemokine (C-C motif) receptor 3,,-2.4019594592,0.003513754
+ENSMUSG00000038057,Dbil5,diazepam binding inhibitor-like 5,,-2.5028223155,0.0039385852
+ENSMUSG00000036528,Ppfibp2,"PTPRF interacting protein, binding protein 2 (liprin beta 2)",,-2.46605747,0.0040025666
+ENSMUSG00000062939,Stat4,signal transducer and activator of transcription 4,1,-2.4654567509,0.0040319131
+ENSMUSG00000085419,Gm11734,-,0,-2.4363656594,0.0040473576
+ENSMUSG00000043456,Zfp536,zinc finger protein 536,1,-2.563214759,0.0041149136
+ENSMUSG00000021763,BC067074,-,0,-2.5106823024,0.0041962174
+ENSMUSG00000022893,Adamts1,"a disintegrin-like and metallopeptidase (reprolysin type) with thrombospondin type 1 motif, 1",,-2.2291785811,0.0042701297
+ENSMUSG00000042284,Itga1,integrin alpha 1,,-2.2212176603,0.004514085
+ENSMUSG00000020589,Fam49a,"family with sequence similarity 49, member A",,-2.4733876527,0.0045221235
+ENSMUSG00000037166,Ppp1r14a,"protein phosphatase 1, regulatory (inhibitor) subunit 14A",,-2.2752528069,0.0048581689
+ENSMUSG00000020077,Srgn,serglycin,,-2.4705758058,0.0050811067
+ENSMUSG00000100714,RP23-158L19.7,-,,-2.1051665625,0.0050811554
+ENSMUSG00000024647,Cbln2,cerebellin 2 precursor protein,,-2.5106977986,0.0053214874
+ENSMUSG00000047150,1700001C19Rik,RIKEN cDNA 1700001C19 gene,,-2.0495067684,0.0053449069
+ENSMUSG00000080780,Gm11252,-,,-2.4939720602,0.0053697169
+ENSMUSG00000021090,Lrrc9,leucine rich repeat containing 9,,-2.1487888151,0.0053866775
+ENSMUSG00000032735,Ablim3,"actin binding LIM protein family, member 3",,-2.404814637,0.0058116873
+ENSMUSG00000021336,Slc17a4,"solute carrier family 17 (sodium phosphate), member 4",,-2.438705486,0.0058338064
+ENSMUSG00000028327,1300002K09Rik,STRA6-like,,-2.2355339441,0.0058847224
+ENSMUSG00000032796,Lama1,"laminin, alpha 1",,-2.2726788621,0.0060740529
+ENSMUSG00000031802,Phxr4,-,,-2.1947971589,0.0061884079
+ENSMUSG00000101615,RP24-91A16.4,-,,-2.3004723325,0.0062077519
+ENSMUSG00000039084,Chad,chondroadherin,,-2.4598508871,0.0063252391
+ENSMUSG00000055421,Pcdh9,protocadherin 9,,-2.1368002494,0.0065182802
+ENSMUSG00000041731,Pgm5,phosphoglucomutase 5,,-2.3850045555,0.0065446738
+ENSMUSG00000043410,Hfm1,"HFM1, ATP-dependent DNA helicase homolog (S. cerevisiae)",,-2.2449165395,0.0079752998
+ENSMUSG00000026829,Gbgt1,"globoside alpha-1,3-N-acetylgalactosaminyltransferase 1",,-2.3030393414,0.0087640645
+ENSMUSG00000025370,Cdh9,cadherin 9,,-2.3354735558,0.0097260562
+ENSMUSG00000036273,Lrrk2,leucine-rich repeat kinase 2,,-2.2815255465,0.0099147221
