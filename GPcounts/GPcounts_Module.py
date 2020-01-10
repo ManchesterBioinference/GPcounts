@@ -463,8 +463,7 @@ class Fit_GPcounts(object):
         
         return mean,samples
   
-
-    def load_and_sample_models(self,index,test,xtest,likelihood = 'Negative_binomial',num_bins = 50,sample= True):
+    def load_and_sample_models(self,indexes,test,xtest,likelihood = 'Negative_binomial',num_bins = 50,sample= True):
         
         self.seed_value = 0
         self.count = 0 
@@ -489,59 +488,42 @@ class Fit_GPcounts(object):
             self.models_number = 3
         else:
             self.models_number = 1
-      
-        models = []
-        means = []
-        variances = []
         
-        for model_num in range(self.models_number):
+        for index in tqdm(indexes):
       
-            self.model_index = model_num+1
-            file_name = filename+str(self.model_index)+'_'+str(index)
-            
-            self.init_hyper_parameters(False)   
-            self.load = True
-            #self.fit_GP_with_likelihood()
+            models = []
+            means = []
+            variances = []
+            for model_num in range(self.models_number):
+                self.model_index = model_num+1
+                file_name = filename+str(self.model_index)+'_'+str(index)
 
-            if self.models_number == 3 and model_num > 0:
-                X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
-                Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)      
-                
-                if model_num == 1:
-                    # initialize X and Y with first time series
-                    self.set_X_Y(X_df[0 : int(self.N/2)],Y_df.iloc[:,0:int(self.N/2)])
-                    self.y = self.Y[self.index].astype(float)
-                    self.y = self.y.reshape([self.N,1])
-                
-                if model_num == 2:
-                    # initialize X and Y with second time series
-                    self.set_X_Y(X_df[int(self.N/2) : :],Y_df.iloc[:,int(self.N/2) : :])
-                    self.y = self.Y[self.index].astype(float)
-                    self.y = self.y.reshape([self.N,1])
-                
-                
-            self.fit_GP_with_likelihood()
-            
-            ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
-            ckpt.restore(dir_name+file_name)
-            models.append(self.model)
+                self.init_hyper_parameters(False)   
+                self.load = True
+                self.fit_GP_with_likelihood()
 
+                ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
+                ckpt.restore(dir_name+file_name)
+                models.append(self.model)
+
+                if sample:
+                    if likelihood == 'Gaussian':
+                        mean, var = self.model.predict_y(xtest)
+
+                    else:
+                        mean, var = self.samples_posterior_predictive_distribution(xtest,sample = True)
+
+                    means.append(mean)
+                    variances.append(var)
+            
+            genes_models.append(models)
             if sample:
-                if likelihood == 'Gaussian':
-                    mean, var = self.model.predict_y(xtest)
-
-                else:
-                    mean, var = self.samples_posterior_predictive_distribution(xtest,sample = True)
-
-                means.append(mean)
-                variances.append(var)
-            
-            if self.models_number == 3 and model_num > 0:
-                self.set_X_Y(X_df,Y_df)
-                
+                genes_means.append(means)
+                genes_vars.append(variances)
+              
         if sample:
-            params['means']= means
-            params['vars'] = variances
-        params['models']= models
-        
+            params['means']= genes_means
+            params['vars'] = genes_vars
+        params['models']= genes_models
+
         return params

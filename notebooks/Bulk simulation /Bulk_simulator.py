@@ -3,9 +3,9 @@
 
 # # Simulate synthetic bulk RNA-seq gene expression data
 
-# Nuha BinTayyash, 2019
+# Nuha BinTayyash, 2020
 # 
-# This notebool shows how to Simulate synthetic bulk RNA-seq timeseries of $S$ samples for $D$ genes at $T$ timepoints assuming three generative functions $f$: sine, cosine and cubic splines. The generated data from the three functions is exponentiated using exponential link function to set the mean of count data. Count data is sampled from negative binomial distribution parametrized by the probability of success $prob=\frac{r}{\exp(f)+r}$ and number of failures $r =\frac{1}{dispersion} $.
+# This script simulate synthetic bulk RNA-seq timeseries of $S$ samples for $D$ genes at $T$ timepoints assuming three generative functions $f$: sine, cosine and cubic splines. The generated data from the three functions is exponentiated using exponential link function to set the mean of count data. Count data is sampled from negative binomial distribution parametrized by the probability of success $prob=\frac{r}{\exp(f)+r}$ and number of failures $r =\frac{1}{dispersion} $.
 # 
 # Bulk_simulator.py used to simulated four dataset with two levels of the mean of count data (high count and low count datasets) and two levels of dispersion (high dispersion and low dispersion).
 
@@ -14,7 +14,7 @@ import numpy as np
 from scipy.stats import nbinom
 import random
 from scipy.interpolate import CubicSpline
-import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 S = 3 # number of samples 
 T = sorted([0,1,2,3,4,5]*S) # Time points
@@ -86,7 +86,7 @@ alpha_intervals = [[.001,.01]  # low dispersion
 
 mean_scale = [0.,5.] # low count and/or high count data 
 
-for ms in mean_scale:
+for ms in tqdm(mean_scale):
     for al in range(len(alpha_intervals)):
         
         np.random.seed(0) # reset for new dataset
@@ -99,7 +99,7 @@ for ms in mean_scale:
             
             for i in range(5): ## 5  
                 
-                print(i)
+                #print(i)
                 fun_samples = []
                 fun_constant_samples = []
                 fun_2nd_ts = []
@@ -135,16 +135,16 @@ for ms in mean_scale:
             count_level = 'high_counts_'
         
         if al == 0:
-            alpha_level = 'low_disperison_'
+            alpha_level = 'low_dispersion_'
         else:
             alpha_level = 'high_dispersion_'
             
-        print(count_level+alpha_level+'sample') 
+        #print(count_level+alpha_level+'sample') 
         
         genes = ['gene_%s' % (s+1) for s in range(samples.shape[0])] 
         col = list(map(str,T))
         samples_df = pd.DataFrame(data=samples,index= genes,columns=col)
-        samples_df.to_csv(count_level+alpha_level+'samples.csv')
+        samples_df.to_csv(count_level+alpha_level+'differentially_expressed_genes.csv')
         samples_df_constant = pd.DataFrame(data=samples_constant,index= genes,columns=col)
-        samples_df_constant.to_csv(count_level+alpha_level+'samples_constant.csv')
+        samples_df_constant.to_csv(count_level+alpha_level+'non_differentially_expressed_genes.csv')
         
