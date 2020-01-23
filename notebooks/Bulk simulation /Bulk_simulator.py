@@ -46,15 +46,7 @@ def sample_count (fun_num,start):
     # alpha level high or low
     alpha = np.random.uniform(alpha_intervals[al][0],alpha_intervals[al][1],1) 
     alpha_constant = np.random.uniform(alpha_intervals[al][0],alpha_intervals[al][1],1) 
- 
-    if fun_num == 2:
-        end = x[3]
-    else:
-        end = start + 7.
-        AM = np.array(np.random.uniform(1., 5.+(multiplier*.1),len(T))) # Amplifier
     
-    xtest = np.array(sorted(np.random.uniform(start,end,len(T))))
-        
     if fun_num == 0:
         f = sin_fun(xtest,AM)
         
@@ -64,12 +56,11 @@ def sample_count (fun_num,start):
     if fun_num == 2:
         f = cs(xtest) 
     
-    f = f + np.random.rand(1) # add randomness    
+    f = f + np.random.uniform(-1.,1.) # add randomness    
     f_sample = sample_from_NegativeBinomal(1./alpha,np.exp(f)).T
-    
+  
     constant_fun = np.linspace(np.min(f),np.max(f),100) # 
     constant = np.ones(len(T))*(constant_fun[s]) + 1.
-  
     constant_sample = sample_from_NegativeBinomal(1./alpha_constant,np.exp(constant)).T
     
     return f_sample,constant_sample
@@ -98,7 +89,6 @@ for ms in tqdm(mean_scale):
             multiplier = multiplier + ms
             
             for i in range(5): ## 5  
-                
                 #print(i)
                 fun_samples = []
                 fun_constant_samples = []
@@ -108,13 +98,12 @@ for ms in tqdm(mean_scale):
                 x = np.linspace(0+i,5+i,4)
                 y = np.random.uniform(-1.+ ms,7.+ ms,4)
                 cs = Cubic_spline(x,y)
-
+                AM = np.array(sorted(np.random.uniform(0., 3.+(multiplier*.1),len(T)))) # Amplifier
+                start = np.random.uniform(0.,1000.) # random start point of sine and coise function  
+                xtest = np.array(sorted(np.random.uniform(start,start+13,len(T))))
                 for j in range(3):
-                    if j < 2:
-                        start = np.random.uniform(0.,1000.) # random start point of sine and coise function
-                    else:
-                        start = x[0]
-
+                    if j==2:
+                        xtest = np.array(sorted(np.random.uniform(x[0],x[3],len(T))))
                     for s in range(100): # generate 100 samples 
 
                         f_sample,f_constant = sample_count(j,start)

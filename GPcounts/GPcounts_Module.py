@@ -10,7 +10,8 @@ from pathlib import Path
 import pandas as pd
 from gpflow.utilities import set_trainable
 from tqdm import tqdm
-
+from matplotlib import pyplot as plt
+import statsmodels.api as sm
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -89,11 +90,11 @@ class Fit_GPcounts(object):
             print('InvalidArgumentError: Dimension 0 in X shape must be equal to Dimension 1 in Y, but shapes are %d and %d.' %(X.shape[0],Y.shape[1]))
             
     def initialize_parameters_run(self,lik_name,models_number,branching = False):
+        tf.random.set_seed(self.seed_value)
+        np.random.seed(self.seed_value)
         gpflow.config.set_default_float(np.float64)
         tf.compat.v1.get_default_graph()
         tf.compat.v1.set_random_seed(self.seed_value)
-        tf.random.set_seed(self.seed_value)
-        np.random.seed(self.seed_value)
         
         self.branching = branching# branching kernel or RBF kernel
         self.y = None 
@@ -116,7 +117,6 @@ class Fit_GPcounts(object):
     
     def Infer_trajectory(self,lik_name= 'Negative_binomial'):
         log_likelihood = self.run_test(lik_name,1)
-        #self.initialize_parameters_run(lik_name,1)
         return log_likelihood
         
     def One_sample_test(self,lik_name= 'Negative_binomial'):
@@ -258,17 +258,18 @@ class Fit_GPcounts(object):
         np.random.seed(self.seed_value)
         self.hyper_parameters['ls'] = np.random.uniform(0. , (np.max(self.X)-np.min(self.X))/10.)    
         self.hyper_parameters['var'] = np.random.uniform(1., 20.)
-        self.hyper_parameters['alpha'] = np.random.uniform(0.001, 10.)
+        self.hyper_parameters['alpha'] = np.random.uniform(0.001, 1.)
         self.hyper_parameters['km'] = np.random.uniform(1.0, 50.)
         
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000. # constant kernel
-            if self.lik_name == 'Negative_binomial':
-                self.hyper_parameters['alpha'] = self.lik_alpha
-            if self.lik_name == 'Zero_inflated_negative_binomial':
-                self.hyper_parameters['alpha'] = self.lik_alpha
-                self.hyper_parameters['km'] = self.lik_km 
-                
+            if not(self.load):
+                if self.lik_name == 'Negative_binomial':
+                    self.hyper_parameters['alpha'] = self.lik_alpha
+                if self.lik_name == 'Zero_inflated_negative_binomial':
+                    self.hyper_parameters['alpha'] = self.lik_alpha
+                    self.hyper_parameters['km'] = self.lik_km 
+
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1       
     def fit_GP(self):
         fail = False
@@ -368,7 +369,7 @@ class Fit_GPcounts(object):
 
         else:
             # mean of posterior predictive samples
-            mean,var = self.samples_posterior_predictive_distribution(xtest,sample = False) 
+            mean,var = self.samples_posterior_predictive_distribution(xtest,sample = True) 
 
         if self.count_local_optima < 5.0: # limit number of trial to fix local optima  
             
@@ -380,6 +381,7 @@ class Fit_GPcounts(object):
             if (mean_max > y_max) and round((mean_mean-y_mean)/y_mean) > 0 or mean.mean() == 0:
                 self.count_local_optima = self.count_local_optima+1 
                 #print('local optima') 
+                #self.plot(self.lik_name,xtest,self.model,mean,var)
                 self.init_hyper_parameters(True)
                 self.fit_GP()
                             
@@ -467,12 +469,13 @@ class Fit_GPcounts(object):
             models = []
             means = []
             variances = []
+            self.index = genes_name.index(index)
 
             for model_num in range(self.models_number):
                
                 self.model_index = model_num+1
                 file_name = filename+str(self.model_index)+'_'+str(index)
-
+             
                 if self.models_number == 3:
                     X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
                     Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)
@@ -488,8 +491,6 @@ class Fit_GPcounts(object):
                         # initialize X and Y with second time series
                         self.set_X_Y(X_df[int(self.N/2) : :],Y_df.iloc[:,int(self.N/2) : :])
  
-                self.index = genes_name.index(index)
-
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
 
@@ -529,3 +530,5 @@ class Fit_GPcounts(object):
         params['models']= genes_models
 
         return params
+    
+   
