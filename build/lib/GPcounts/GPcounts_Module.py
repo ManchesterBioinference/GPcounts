@@ -10,8 +10,9 @@ from pathlib import Path
 import pandas as pd
 from gpflow.utilities import set_trainable
 from tqdm import tqdm
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 import statsmodels.api as sm
+from sklearn.preprocessing import PowerTransformer
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -90,19 +91,21 @@ class Fit_GPcounts(object):
             print('InvalidArgumentError: Dimension 0 in X shape must be equal to Dimension 1 in Y, but shapes are %d and %d.' %(X.shape[0],Y.shape[1]))
             
     def initialize_parameters_run(self,lik_name,models_number,branching = False):
-        tf.random.set_seed(self.seed_value)
+        
+        self.seed_value = 0 
+        self.count_local_optima = 0 # number of trails to resolve local optima
+        
         np.random.seed(self.seed_value)
-        gpflow.config.set_default_float(np.float64)
         tf.compat.v1.get_default_graph()
         tf.compat.v1.set_random_seed(self.seed_value)
+        tf.random.set_seed(self.seed_value)
+        gpflow.config.set_default_float(np.float64)
         
         self.branching = branching# branching kernel or RBF kernel
         self.y = None 
         self.index = None
         self.hyper_parameters = {} # model paramaters initialization
-        self.seed_value = 0 
-        self.count_local_optima = 0 # number of trails to resolve local optima
-        
+       
         self.models_number = models_number # Total number of models to fit for single gene
         self.model_index = None # to index the current model
         self.model = None
@@ -144,9 +147,9 @@ class Fit_GPcounts(object):
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([self.N,1])
             
-            if self.lik_name == 'Gaussian': 
-                self.y = np.log(self.y+1)
-             
+            #if self.lik_name == 'Gaussian': 
+            #    self.y = np.log(self.y+1)
+            #print(self.y)   
             column_name = ['Dynamic_model_log_likelihood']
             self.model_index = 1
             model_1_log_likelihood = self.fit_model()
@@ -209,7 +212,7 @@ class Fit_GPcounts(object):
                 if model_1_log_likelihood == np.nan or model_2_log_likelihood == np.nan or model_3_log_likelihood == np.nan: 
                     ll_ratio = np.nan
                 else:
-                    ll_ratio = ((model_2_log_likelihood*model_3_log_likelihood)-model_1_log_likelihood)
+                    ll_ratio = ((model_2_log_likelihood+model_3_log_likelihood)-model_1_log_likelihood)
                 
                 log_likelihood = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio]
             
@@ -258,7 +261,7 @@ class Fit_GPcounts(object):
         np.random.seed(self.seed_value)
         self.hyper_parameters['ls'] = np.random.uniform(0. , (np.max(self.X)-np.min(self.X))/10.)    
         self.hyper_parameters['var'] = np.random.uniform(1., 20.)
-        self.hyper_parameters['alpha'] = np.random.uniform(0.001, 1.)
+        self.hyper_parameters['alpha'] = np.random.uniform(1., 10.)
         self.hyper_parameters['km'] = np.random.uniform(1.0, 50.)
         
         if self.model_index == 2 and self.models_number == 2:
@@ -334,7 +337,13 @@ class Fit_GPcounts(object):
                 set_trainable(likelihood.km,False)
                 
         # Run model with selected kernel and likelihood
+        
         if self.lik_name == 'Gaussian':
+            #self.y = np.log(self.y+1) #log transform 
+            # self.y = np.log(1+np.exp(-np.abs(self.y))) + np.max(self.y,0) #soft max 
+            #pt = PowerTransformer()
+            #self.y = pt.fit_transform(self.y)
+
             if self.sparse:
                 self.model = gpflow.models.SGPR((self.X, self.y), kern, self.Z)
             else:
@@ -369,7 +378,7 @@ class Fit_GPcounts(object):
 
         else:
             # mean of posterior predictive samples
-            mean,var = self.samples_posterior_predictive_distribution(xtest,sample = True) 
+            mean,var = self.samples_posterior_predictive_distribution(xtest,sample = False) 
 
         if self.count_local_optima < 5.0: # limit number of trial to fix local optima  
             
@@ -463,19 +472,19 @@ class Fit_GPcounts(object):
         genes_name = self.genes_name.tolist()
         
         for index in indexes:
-              
-            self.initialize_parameters_run(lik_name,self.models_number)
             
+            #self.initialize_parameters_run(lik_name,self.models_number)
             models = []
             means = []
             variances = []
             self.index = genes_name.index(index)
-
+            
             for model_num in range(self.models_number):
-               
+                self.initialize_parameters_run(lik_name,self.models_number)
+                self.index = genes_name.index(index)
                 self.model_index = model_num+1
                 file_name = filename+str(self.model_index)+'_'+str(index)
-             
+                
                 if self.models_number == 3:
                     X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
                     Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)
@@ -496,8 +505,6 @@ class Fit_GPcounts(object):
 
                 if self.lik_name == 'Gaussian': 
                     self.y = np.log(self.y+1)
-                #self.y = self.Y[self.index].astype(float)
-                #self.y = self.y.reshape([self.N,1])  
                 self.load = True
                 self.init_hyper_parameters(False) 
                 self.fit_GP_with_likelihood()
@@ -519,10 +526,10 @@ class Fit_GPcounts(object):
                 if self.models_number == 3 and model_num > 0:
                     self.set_X_Y(X_df,Y_df)
 
-                genes_models.append(models)
-                if sample:
-                    genes_means.append(means)
-                    genes_vars.append(variances)
+            genes_models.append(models)
+            if sample:
+                genes_means.append(means)
+                genes_vars.append(variances)
 
         if sample:
             params['means']= genes_means

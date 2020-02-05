@@ -1,13 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Simulate synthetic bulk RNA-seq gene expression data
+# In[1]:
 
-# Nuha BinTayyash, 2020
-# 
-# This script simulate synthetic bulk RNA-seq timeseries of $S$ samples for $D$ genes at $T$ timepoints assuming three generative functions $f$: sine, cosine and cubic splines. The generated data from the three functions is exponentiated using exponential link function to set the mean of count data. Count data is sampled from negative binomial distribution parametrized by the probability of success $prob=\frac{r}{\exp(f)+r}$ and number of failures $r =\frac{1}{dispersion} $.
-# 
-# Bulk_simulator.py used to simulated four dataset with two levels of the mean of count data (high count and low count datasets) and two levels of dispersion (high dispersion and low dispersion).
 
 import pandas as pd
 import numpy as np
@@ -15,11 +10,14 @@ from scipy.stats import nbinom
 import random
 from scipy.interpolate import CubicSpline
 from tqdm import tqdm
+#import matplotlib.pyplot as plt
+
 
 S = 3 # number of samples 
 T = sorted([0,1,2,3,4,5]*S) # Time points
 
 np.random.seed(0)
+random.seed(0)
 
 def sin_fun(x,AM):
     return AM*np.sin(x) + ms # to increase the mean of the function 
@@ -56,11 +54,20 @@ def sample_count (fun_num,start):
     if fun_num == 2:
         f = cs(xtest) 
     
-    f = f + np.random.uniform(-1.,1.) # add randomness    
+       
+    f = f + np.random.uniform(-1.,1.) # add randomness  
+    #ax = fig.add_subplot(4,1,fun_num+1)
+    #ax.plot(xtest, f) 
     f_sample = sample_from_NegativeBinomal(1./alpha,np.exp(f)).T
-  
+        
     constant_fun = np.linspace(np.min(f),np.max(f),100) # 
-    constant = np.ones(len(T))*(constant_fun[s]) + 1.
+    #print(np.mean(constant_fun))
+    if np.mean(constant_fun) < 2.0:
+        shift = 2.
+    else:
+        shift = 0.
+    constant = np.ones(len(T))*(constant_fun[s]) + shift + (multiplier*.1)
+    #ax.plot(xtest, constant) 
     constant_sample = sample_from_NegativeBinomal(1./alpha_constant,np.exp(constant)).T
     
     return f_sample,constant_sample
@@ -72,15 +79,17 @@ def vstack_mean(samples):
 samples = []
 samples_constant = []
 
-alpha_intervals = [[.001,.01]  # low dispersion
-                  ,[5.,11.]]   # high dispersion
+alpha_intervals = [[.01,.2]  # low dispersion
+                  ,[5.,11.]
+                  ]   # high dispersion
 
-mean_scale = [0.,5.] # low count and/or high count data 
+mean_scale = [0,5] # low count and/or high count data 
 
 for ms in tqdm(mean_scale):
     for al in range(len(alpha_intervals)):
         
         np.random.seed(0) # reset for new dataset
+        random.seed(0)
         samples = []
         samples_constant = []
 
@@ -88,22 +97,27 @@ for ms in tqdm(mean_scale):
             
             multiplier = multiplier + ms
             
-            for i in range(5): ## 5  
+            for i in range(6): ## 5  
                 #print(i)
+                #fig = plt.figure(figsize=(6,15))
+                
                 fun_samples = []
                 fun_constant_samples = []
-                fun_2nd_ts = []
 
                 # cubic spline function with four points
-                x = np.linspace(0+i,5+i,4)
-                y = np.random.uniform(-1.+ ms,7.+ ms,4)
+                x = np.linspace(0+i,4+i,5)
+                y = random.sample(range(ms+-2,ms+6), 5)
+                #np.random.uniform(-2+ ms,6.+ ms,4)
+                #print(y)
                 cs = Cubic_spline(x,y)
-                AM = np.array(sorted(np.random.uniform(0., 3.+(multiplier*.1),len(T)))) # Amplifier
+                AM = np.array(sorted(np.random.uniform(0., 5.+(multiplier*.1),len(T)))) # Amplifier
+                #print(AM)
                 start = np.random.uniform(0.,1000.) # random start point of sine and coise function  
                 xtest = np.array(sorted(np.random.uniform(start,start+13,len(T))))
                 for j in range(3):
+                    #print(j)
                     if j==2:
-                        xtest = np.array(sorted(np.random.uniform(x[0],x[3],len(T))))
+                        xtest = np.array(sorted(np.random.uniform(x[0],x[4],len(T))))
                     for s in range(100): # generate 100 samples 
 
                         f_sample,f_constant = sample_count(j,start)
@@ -137,3 +151,4 @@ for ms in tqdm(mean_scale):
         samples_df_constant = pd.DataFrame(data=samples_constant,index= genes,columns=col)
         samples_df_constant.to_csv(count_level+alpha_level+'non_differentially_expressed_genes.csv')
         
+
