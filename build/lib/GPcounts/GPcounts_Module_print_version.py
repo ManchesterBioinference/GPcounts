@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import gpflow
 #from branchingKernel import BranchKernel
-from GPcounts import NegativeBinomialLikelihood
+import NegativeBinomialLikelihood
 from sklearn.cluster import KMeans
 import scipy.stats as ss
 from pathlib import Path
@@ -146,7 +146,7 @@ class Fit_GPcounts(object):
             
             if self.lik_name == 'Gaussian': 
                 self.y = np.log(self.y+1)
-               
+            #print(self.y)   
             column_name = ['Dynamic_model_log_likelihood']
             self.model_index = 1
             model_1_log_likelihood = self.fit_model()
@@ -185,7 +185,7 @@ class Fit_GPcounts(object):
                     log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio]               
             
             if self.models_number == 3:
-                column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio'] 
+                column_name = ['model_1_log_likelihood','model_2_log_likelihood','model_3_log_likelihood','log_likelihood_ratio'] 
                 
                 X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
                 Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)      
@@ -249,16 +249,24 @@ class Fit_GPcounts(object):
         
         if reset:
             self.seed_value = self.seed_value + 1
-             
+            #print('reset seed:',self.seed_value) 
+            
         else:   
             self.seed_value = 0
             self.count_local_optima = 0 
             
         np.random.seed(self.seed_value)
+        #if self.seed_value > 0:
         self.hyper_parameters['ls'] = np.random.uniform(0. , (np.max(self.X)-np.min(self.X))/10.)    
         self.hyper_parameters['var'] = np.random.uniform(1., 20.)
         self.hyper_parameters['alpha'] = np.random.uniform(1., 10.)
-        self.hyper_parameters['km'] = np.random.uniform(1.0, 50.)       
+        self.hyper_parameters['km'] = np.random.uniform(1.0, 50.)
+    #else:
+            #self.hyper_parameters['ls'] = 1.   
+            #self.hyper_parameters['var'] = 1.
+            #self.hyper_parameters['alpha'] = 1.
+            #self.hyper_parameters['km'] = 1.
+            
 
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000. # constant kernel
@@ -283,6 +291,9 @@ class Fit_GPcounts(object):
                 self.fit_GP_with_likelihood()
 
             except tf.errors.InvalidArgumentError as e:
+                #print('error occured: {}'.format(e))
+                print(self.index)
+                print('Cholesky decomposition was not successful')
                 fail = True
                 count_Cholesky_fail = count_Cholesky_fail+1
                 continue
@@ -334,7 +345,11 @@ class Fit_GPcounts(object):
         # Run model with selected kernel and likelihood
         
         if self.lik_name == 'Gaussian':
-            
+            #self.y = np.log(self.y+1) #log transform 
+            # self.y = np.log(1+np.exp(-np.abs(self.y))) + np.max(self.y,0) #soft max 
+            #pt = PowerTransformer()
+            #self.y = pt.fit_transform(self.y)
+
             if self.sparse:
                 self.model = gpflow.models.SGPR((self.X, self.y), kern, self.Z)
             else:
@@ -353,7 +368,10 @@ class Fit_GPcounts(object):
 
             o = gpflow.optimizers.Scipy()
             res = o.minimize(objective, variables=self.model.trainable_variables)
-            
+            #print('GP_optimizers_status:',res.success)
+            print(self.index)
+            print('optimization failure')
+            # fix optimization failure with random initialization
             if not(res.success):
                 self.init_hyper_parameters(True)
                 self.fit_GP()     
@@ -369,7 +387,8 @@ class Fit_GPcounts(object):
         else:
             # mean of posterior predictive samples
             mean,var = self.samples_posterior_predictive_distribution(xtest,sample = False) 
-            
+            #print('test')
+
         if self.count_local_optima < 5.0: # limit number of trial to fix local optima  
             
             y_max = self.y.max()
@@ -379,6 +398,9 @@ class Fit_GPcounts(object):
             
             if (mean_max > y_max) and round((mean_mean-y_mean)/y_mean) > 0 or mean.mean() == 0:
                 self.count_local_optima = self.count_local_optima+1 
+                print(self.index)
+                print('local optima') 
+                #self.plot(self.lik_name,xtest,self.model,mean,var)
                 self.init_hyper_parameters(True)
                 self.fit_GP()
                             
@@ -527,3 +549,29 @@ class Fit_GPcounts(object):
 
         return params
     
+ 
+    '''
+    def plot(self,likelihood,xtest,model,mean,var):
+
+        fig = plt.figure()
+        #plt.ylabel('Gene Expression', fontsize=16)
+        #plt.xlabel('Times', fontsize=16)
+
+
+        if likelihood == 'Gaussian':
+            y = np.log(model.data[1]+1)
+            plt.fill_between(xtest[:,0],
+                                mean[:,0] - 2*np.sqrt(var[:,0]),
+                                mean[:,0] + 2*np.sqrt(var[:,0]), alpha=0.2)
+        else:
+            y = model.data[1]
+            lowess = sm.nonparametric.lowess
+            percentile_5 = lowess(np.percentile(var, 5, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            percentile_95 = lowess(np.percentile(var, 95, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            plt.fill_between(xtest[:,0],percentile_5,percentile_95,alpha = 0.2)
+
+        plt.scatter(model.data[0],model.data[1], s=10, color='black', alpha=0.6) #data
+        plt.plot(xtest, mean, lw=2) 
+        plt.tick_params(labelsize = 'large')
+        plt.show()
+      '''
