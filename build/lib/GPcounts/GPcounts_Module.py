@@ -144,8 +144,8 @@ class Fit_GPcounts(object):
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([self.N,1])
             
-            if self.lik_name == 'Gaussian': 
-                self.y = np.log(self.y+1)
+            #if self.lik_name == 'Gaussian': 
+            #    self.y = np.log(self.y+1)
                
             column_name = ['Dynamic_model_log_likelihood']
             self.model_index = 1
@@ -194,6 +194,9 @@ class Fit_GPcounts(object):
                 self.set_X_Y(X_df[0 : int(self.N/2)],Y_df.iloc[:,0:int(self.N/2)])
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
+                #if self.lik_name == 'Gaussian': 
+                #    self.y = np.log(self.y+1)
+            
                 self.model_index = 2
                 model_2_log_likelihood = self.fit_model() 
                 
@@ -201,6 +204,9 @@ class Fit_GPcounts(object):
                 self.set_X_Y(X_df[self.N : :],Y_df.iloc[:,int(self.N) : :])
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
+                #if self.lik_name == 'Gaussian': 
+                #    self.y = np.log(self.y+1)
+            
                 self.model_index = 3
                 model_3_log_likelihood = self.fit_model()
                 
@@ -332,8 +338,9 @@ class Fit_GPcounts(object):
                 set_trainable(likelihood.km,False)
                 
         # Run model with selected kernel and likelihood
-        
+      
         if self.lik_name == 'Gaussian':
+            self.y = np.log(self.y+1)
             
             if self.sparse:
                 self.model = gpflow.models.SGPR((self.X, self.y), kern, self.Z)
@@ -491,8 +498,8 @@ class Fit_GPcounts(object):
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
 
-                if self.lik_name == 'Gaussian': 
-                    self.y = np.log(self.y+1)
+                #if self.lik_name == 'Gaussian': 
+                #    self.y = np.log(self.y+1)
                     
                 self.load = True
                 self.init_hyper_parameters(False) 
