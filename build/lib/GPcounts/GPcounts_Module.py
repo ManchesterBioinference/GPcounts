@@ -11,7 +11,7 @@ import pandas as pd
 from gpflow.utilities import set_trainable
 from tqdm import tqdm
 from scipy.signal import savgol_filter
-import pickle
+#import pickle
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -163,7 +163,7 @@ class Fit_GPcounts(object):
             if self.models_number == 2:
                 column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio']
                 
-                ls = self.model.kernel.lengthscale.numpy() # to detect local optima case2
+                ls = self.model.kernel.lengthscales.numpy() # to detect local optima case2
                 # copy likelihood parameters and use them to fit constant model
                 if self.lik_name == 'Negative_binomial':
                     self.lik_alpha  = self.model.likelihood.alpha.numpy()
@@ -232,12 +232,7 @@ class Fit_GPcounts(object):
           
             genes_var[self.genes_name[self.index]] = gene_var
             genes_mean[self.genes_name[self.index]] = gene_mean
-            
-            filename = self.get_file_name()
-            filename = filename.replace(self.genes_name[self.index]+'_model_'+str(self.model_index),'_'+str(self.models_number))
-            with open(filename, 'wb') as handle:
-                pickle.dump({'mean':genes_mean,'var':genes_var}, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+      
         return pd.DataFrame.from_dict(genes_log_likelihoods, orient='index', columns= column_name)
     
     def get_file_name(self):
@@ -251,6 +246,9 @@ class Fit_GPcounts(object):
         if self.sparse:
                 filename += 'sparse_'
         
+        if self.models_number == 3:
+            filename += 'tst_'  
+        
         filename += self.genes_name[self.index]+'_model_'+str(self.model_index)
         return filename
 
@@ -262,7 +260,6 @@ class Fit_GPcounts(object):
             log_likelihood = self.model.log_likelihood().numpy()
             
             filename = self.get_file_name()
-            
             ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
             ckpt.write(filename)
             
@@ -305,6 +302,7 @@ class Fit_GPcounts(object):
         except tf.errors.InvalidArgumentError as e:
             if self.count_fix < 10:
                 print('Cholesky decomposition was not successful.')
+                self.count_fix = self.count_fix +1 
                 self.init_hyper_parameters(True)
                 self.fit_GP()
             else:
@@ -322,7 +320,7 @@ class Fit_GPcounts(object):
             k = gpflow.kernels.Constant(variance= self.hyper_parameters['var']) 
         else:
             k = gpflow.kernels.RBF( variance= self.hyper_parameters['var'],
-                               lengthscale = self.hyper_parameters['ls'])
+                               lengthscales = self.hyper_parameters['ls'])
             
         if self.branching: #select kernel
             if self.fix:
@@ -370,11 +368,12 @@ class Fit_GPcounts(object):
                 return - self.model.log_marginal_likelihood()
 
             o = gpflow.optimizers.Scipy()
-            res = o.minimize(objective, variables=self.model.trainable_variables)
+            res = o.minimize(objective, variables=self.model.trainable_variables,options=dict(maxiter=5000))
             
             if not(res.success):
                 if self.count_fix < 10:
                     print('Optimization fail.')
+                    self.count_fix = self.count_fix +1 
                     self.init_hyper_parameters(True)
                     self.fit_GP()
                 else:
@@ -394,11 +393,11 @@ class Fit_GPcounts(object):
        
         if self.count_fix < 5: # limit number of trial to fix bad solution 
            
-            y_mean = self.y.mean()
-            mean_mean = self.mean.mean()
-            
-            if y_mean > 0.0 and mean_mean > 0.0 :
-                if abs(round((mean_mean-y_mean)/y_mean)) > 1:
+            y_mean = np.mean(self.y)
+            mean_mean = np.mean(self.mean) 
+               
+            if y_mean > 0.0:
+                if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
                     print('local Optima')
                     print('y_mean',y_mean)
                     print('mean_mean',mean_mean)
@@ -416,7 +415,6 @@ class Fit_GPcounts(object):
                 y.append(ss.poisson.rvs(mean[i], size = 500))
 
         if self.lik_name == 'Negative_binomial':
-           
             r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
             prob = r / (mean+ r)   # p probability of success
             for i in range(mean.shape[0]):
@@ -437,20 +435,37 @@ class Fit_GPcounts(object):
         return y
 
     def samples_posterior_predictive_distribution(self,xtest):
-        
+        fit = True
         var = []
         f_samples = []
-        for i in range(10):
-            f_samples.append(self.model.predict_f_samples(xtest, 10))
-            f = np.vstack(f_samples)
-            link_f = np.exp(f[:, :, 0])
-            var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
-        var = np.vstack(var)
-        mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
+        for i in range(20):
+            try:
+                f_samples.append(self.model.predict_f_samples(xtest, 5))
+            except tf.errors.InvalidArgumentError as e:
+                if self.count_fix < 10:
+                    print('Cholesky decomposition was not successful.')
+                    self.count_fix = self.count_fix +1 
+                    self.init_hyper_parameters(True)
+                    self.fit_GP()
+                    
+                else:
+                    self.model = None
+                    print('Can not fit a Gaussian process, Cholesky decomposition was not successful.')
+                    fit = False
+            if fit:
+                f_samples.append(self.model.predict_f_samples(xtest, 10))
+                f = np.vstack(f_samples)
+                link_f = np.exp(f[:, :, 0])
+                var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
+        if fit:
+            var = np.vstack(var)
+            mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
+        else:
+            var = mean = 0
         
         return mean,var
   
-    def load_models(self,genes,test,xtest,lik_name = 'Negative_binomial',sample = False):
+    def load_models(self,genes,test,xtest,lik_name = 'Negative_binomial'):
         # note that RBF kernel and branching kernel is written in same way         
         params = {}
         genes_models = []
@@ -466,22 +481,12 @@ class Fit_GPcounts(object):
             self.models_number = 1
             
         for gene in tqdm(genes):
-            #self.model_index = 1
             self.initialize_parameters_run(lik_name,self.models_number)
             models = []
             means = []
             variances = []
             self.index = self.genes_name.index(gene)
-                  
-            if not(sample):
-                #self.model_index = 1
-                filename = self.get_file_name()
-                filename = filename.replace(self.genes_name[self.index]+'_model_'+str(self.model_index),'_'+str(self.models_number))
-                with open(filename, 'rb') as f:
-                            genes_means_vars = pickle.load(f)
-                means = genes_means_vars['mean'][gene]
-                variances = genes_means_vars['var'][gene]
-                        
+
             for model_num in range(self.models_number):
                 
                 self.initialize_parameters_run(lik_name,self.models_number)
@@ -512,17 +517,16 @@ class Fit_GPcounts(object):
                 # restore check point
                 ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
                 ckpt.restore(file_name)
-                models.append(self.model)
                 
-                if sample:
-                    if self.lik_name == 'Gaussian':
-                        mean, var = self.model.predict_y(xtest)
+                if self.lik_name == 'Gaussian':
+                    mean, var = self.model.predict_y(xtest)
 
-                    else:
-                        mean, var = self.samples_posterior_predictive_distribution(xtest)
-                        
-                    means.append(mean)
-                    variances.append(var)
+                else:
+                    mean, var = self.samples_posterior_predictive_distribution(xtest)
+
+                means.append(mean)
+                variances.append(var)
+                models.append(self.model)
 
                 if self.models_number == 3 and model_num > 0:
                     self.set_X_Y(X_df,Y_df)
