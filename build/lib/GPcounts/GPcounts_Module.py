@@ -123,9 +123,9 @@ class Fit_GPcounts(object):
             self.y = self.y.reshape([self.N,1])
             gene_var = []
             gene_mean = []
-            model_index = 1  
+            self.model_index = 1  
             column_name = ['Dynamic_model_log_likelihood']
-            model_1_log_likelihood = self.fit_model(model_index)
+            model_1_log_likelihood = self.fit_model()
             log_likelihood =  [model_1_log_likelihood] 
             gene_var.append(self.var)
             gene_mean.append(self.mean)
@@ -135,26 +135,30 @@ class Fit_GPcounts(object):
                 
                 ls , km_1 = self.record_hyper_parameters()
            
-                model_index = 2
-                model_2_log_likelihood = self.fit_model(model_index)
-                
-                if self.lik_name == 'Zero_inflated_negative_binomial':
-                    km_2 = self.model.likelihood.km.numpy()
-                    
-                 #test local optima case 2 
-                ll_ratio = model_1_log_likelihood - model_2_log_likelihood
-              
-                if (ls < ((np.max(self.X)-np.min(self.X))/10.) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
-                    model_index = 1
-                    model_1_log_likelihood = self.fit_model(model_index)
-                    ls , km_1 = self.record_hyper_parameters()
-                    model_index = 2
-                    model_2_log_likelihood = self.fit_model(model_index = 2)
-                    
-                if model_1_log_likelihood == np.nan or model_2_log_likelihood == np.nan : 
+                self.model_index = 2
+                model_2_log_likelihood = self.fit_model()
+                  
+                if np.isnan(model_1_log_likelihood) or np.isnan(model_2_log_likelihood):
                     ll_ratio = np.nan
                 else:
-                    log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio]                           
+                    if self.lik_name == 'Zero_inflated_negative_binomial':
+                        km_2 = self.model.likelihood.km.numpy()
+                    
+                     #test local optima case 2 
+                    ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+
+                    if (ls < ((np.max(self.X)-np.min(self.X))/10.) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
+                        self.model_index = 1
+                        self.init_hyper_parameters(True)
+                        model_1_log_likelihood = self.fit_model()
+                        ls , km_1 = self.record_hyper_parameters()
+                        self.model_index = 2
+                        self.init_hyper_parameters(True)
+                        model_2_log_likelihood = self.fit_model()
+                    
+                    ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+
+                log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio]                           
                 gene_var.append(self.var)
                 gene_mean.append(self.mean)
             
@@ -169,8 +173,8 @@ class Fit_GPcounts(object):
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
                 
-                model_index = 2
-                model_2_log_likelihood = self.fit_model(model_index) 
+                self.model_index = 2
+                model_2_log_likelihood = self.fit_model() 
                 gene_var.append(self.var)
                 gene_mean.append(self.mean)
             
@@ -179,14 +183,14 @@ class Fit_GPcounts(object):
                 self.y = self.Y[self.index].astype(float)
                 self.y = self.y.reshape([self.N,1])
                 
-                model_index = 3
-                model_3_log_likelihood = self.fit_model(model_index)
+                self.model_index = 3
+                model_3_log_likelihood = self.fit_model()
                 gene_var.append(self.var)
                 gene_mean.append(self.mean)
             
                 self.set_X_Y(X_df,Y_df)
                 
-                if model_1_log_likelihood == np.nan or model_2_log_likelihood == np.nan or model_3_log_likelihood == np.nan: 
+                if np.isnan(model_1_log_likelihood) or np.isnan(model_2_log_likelihood) or np.isnan(model_3_log_likelihood): 
                     ll_ratio = np.nan
                 else:
                     ll_ratio = ((model_2_log_likelihood+model_3_log_likelihood)-model_1_log_likelihood)
@@ -230,11 +234,8 @@ class Fit_GPcounts(object):
         return filename
 
     # fit a Gaussian process, get the log likelihood and save the model for a gene 
-    def fit_model(self,model_index,reset = False):
-        self.model_index = model_index
-        
-        self.init_hyper_parameters(reset) 
-        
+    def fit_model(self):
+         
         successed_fit = self.fit_GP()
         
         if successed_fit:
@@ -254,13 +255,13 @@ class Fit_GPcounts(object):
     def init_hyper_parameters(self,reset = False):
        
         self.hyper_parameters = {}
-      
+        
         if reset:
             self.seed_value = self.seed_value + 1
              
         else:   
             self.seed_value = 0
-            self.count_fix = 0 # number of trails to fix bad solution
+            self.count_fix = 0 
             
         np.random.seed(self.seed_value)
         self.hyper_parameters['ls'] = np.random.uniform(0. , (np.max(self.X)-np.min(self.X))/10.)    
@@ -273,17 +274,12 @@ class Fit_GPcounts(object):
             if self.optimize:
                 if self.lik_name == 'Negative_binomial':
                     self.hyper_parameters['alpha'] = self.lik_alpha
-                if self.lik_name == 'Zero_inflated_negative_binomial':
-                    self.hyper_parameters['alpha'] = self.lik_alpha
-                    self.hyper_parameters['km'] = self.lik_km
-            
 
         else:
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
-            self.fix = False # fix kernel hyper-parameters
-         
+            self.fix = False # fix kernel hyper-parameters    
        
         tf.compat.v1.get_default_graph()
         tf.compat.v1.set_random_seed(self.seed_value)
@@ -296,15 +292,16 @@ class Fit_GPcounts(object):
         self.xp = -1000. # Put branching time much earlier than zero time
        
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1       
-    def fit_GP(self):
+    def fit_GP(self,reset = False):
+        self.init_hyper_parameters(reset)
         fit = True   
         try:
             fit = self.fit_GP_with_likelihood()
         except tf.errors.InvalidArgumentError as e:
             if self.count_fix < 10:
-                print('Fit Cholesky decomposition was not successful.')
+                #print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
-                model_log_likelihood = self.fit_model(self.model_index,True)
+                fit = self.fit_GP(True)
             else:
                 print('Can not fit a Gaussian process, Cholesky decomposition was not successful.')
                 fit = False
@@ -315,13 +312,13 @@ class Fit_GPcounts(object):
     
     # Fit a GP with selected kernel,likelihood,run it as sparse or full GP 
     def fit_GP_with_likelihood(self):
-        
+        fit = True
+       
         if self.hyper_parameters['ls'] == 1000:
             k = gpflow.kernels.Constant(variance= self.hyper_parameters['var']) 
         else:
             k = gpflow.kernels.RBF( variance= self.hyper_parameters['var'],
-                               lengthscales = self.hyper_parameters['ls'])
-            
+                               lengthscales = self.hyper_parameters['ls'])     
         if self.branching: #select kernel
             if self.fix:
                 set_trainable(k.lengthscales,False)
@@ -343,9 +340,6 @@ class Fit_GPcounts(object):
             alpha = self.hyper_parameters['alpha']
             km = self.hyper_parameters['km']
             likelihood = NegativeBinomialLikelihood.ZeroInflatedNegativeBinomial(alpha,km)
-            if self.hyper_parameters['ls'] == 1000:
-                set_trainable(likelihood.alpha,False)
-                set_trainable(likelihood.km,False)
                 
         # Run model with selected kernel and likelihood  
         if self.lik_name == 'Gaussian':
@@ -372,14 +366,13 @@ class Fit_GPcounts(object):
             
             if not(res.success):
                 if self.count_fix < 10:
-                    print('Optimization fail.')
+                    #print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
-                    model_log_likelihood = self.fit_model(self.model_index,True)
-           
+                    fit = self.fit_GP(True)
                 else:
                     print('Can not fit a Gaussian process, Optimization fail.')
-                    return False
-        return True 
+                    fit = False
+        return fit
 
     def test_local_optima_case1(self):
         xtest = np.linspace(np.min(self.X),np.max(self.X),100)[:,None]
@@ -390,7 +383,8 @@ class Fit_GPcounts(object):
         else:
             # mean of posterior predictive samples
             self.mean,self.var = self.samples_posterior_predictive_distribution(xtest)         
-       
+        
+        
         if self.count_fix < 5: # limit number of trial to fix bad solution 
            
             y_mean = np.mean(self.y)
@@ -399,17 +393,21 @@ class Fit_GPcounts(object):
             #print('y_mean',y_mean)
             #print('mean_mean',mean_mean)
             #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
-               
+            if self.N < 100:
+                diff = 0
+            else:
+                diff = 1
+                
             if y_mean > 0.0:
-                if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
+                if abs(round((mean_mean-y_mean)/y_mean)) > diff or mean_mean == 0.0:
                     
-                    print('local Optima')
-                    print(self.model_index)
-                    print('y_mean',y_mean)
-                    print('mean_mean',mean_mean)
-                    print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                    #print('local Optima')
+                    #print(self.model_index)
+                    #print('y_mean',y_mean)
+                    #print('mean_mean',mean_mean)
+                    #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
                     self.count_fix = self.count_fix +1 
-                    model_log_likelihood = self.fit_model(self.model_index,True)
+                    fit = self.fit_GP(True)
            
                                     
     def generate_Samples_from_distribution(self,mean):
