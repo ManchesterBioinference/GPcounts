@@ -120,9 +120,7 @@ class Fit_GPcounts(object):
         else:
             column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio'] 
             
-        if self.lik_name =='Gaussian':    
-            self.Y = np.log(self.Y+1)
-                
+        
         for i in tqdm(range(self.D)):
             
             self.index = i
@@ -165,7 +163,7 @@ class Fit_GPcounts(object):
             if self.models_number == 3:
                 
                 X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
-                Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)      
+                Y_df = pd.DataFrame(data=self.Y_copy,index= self.genes_name,columns= self.cells_name)  
                 
                 # initialize X and Y with first time series
                 self.set_X_Y(X_df[0 : int(self.N/2)],Y_df.iloc[:,0:int(self.N/2)])
@@ -195,7 +193,7 @@ class Fit_GPcounts(object):
             genes_log_likelihoods[self.genes_name[self.index]] = log_likelihood
          
         return pd.DataFrame.from_dict(genes_log_likelihoods, orient='index', columns= column_name)
-    
+   
     
     # fit a Gaussian process, get the log likelihood and save the model for a gene 
     def fit_model(self):
@@ -222,7 +220,7 @@ class Fit_GPcounts(object):
             fit = self.fit_GP_with_likelihood()
         except tf.errors.InvalidArgumentError as e:
             if self.count_fix < 10:
-                #print('Fit Cholesky decomposition was not successful.')
+                print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
             else:
@@ -263,14 +261,15 @@ class Fit_GPcounts(object):
             alpha = self.hyper_parameters['alpha']
             km = self.hyper_parameters['km']
             likelihood = NegativeBinomialLikelihood.ZeroInflatedNegativeBinomial(alpha,km)
-                
+       
         # Run model with selected kernel and likelihood  
         if self.lik_name == 'Gaussian':
+            self.y = np.log(self.y+1)
             
             if self.sparse:
-                self.model = gpflow.models.SGPR((self.X, self.y), kern, self.Z)
+                self.model = gpflow.models.SGPR((self.X,self.y), kern, self.Z)
             else:
-                self.model = gpflow.models.GPR((self.X, self.y), kern)
+                self.model = gpflow.models.GPR((self.X,self.y), kern)
         else:
             
             if self.sparse:
@@ -284,7 +283,7 @@ class Fit_GPcounts(object):
 
             if not(res.success):
                 if self.count_fix < 10:
-                    #print('Optimization fail.')
+                    print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
                 else:
@@ -355,7 +354,9 @@ class Fit_GPcounts(object):
         tf.compat.v1.set_random_seed(self.seed_value)
         tf.random.set_seed(self.seed_value)
         gpflow.config.set_default_float(np.float64)
-       
+         
+        self.y = self.Y[self.index].astype(float)
+        self.y = self.y.reshape([-1,1])   
         self.model = None
         self.var = None 
         self.mean = None   
@@ -387,11 +388,11 @@ class Fit_GPcounts(object):
                 
             if y_mean > 0.0:
                 if abs(round((mean_mean-y_mean)/y_mean)) > diff or mean_mean == 0.0:
-                    #print('local Optima')
-                    #print(self.model_index)
-                    #print('y_mean',y_mean)
-                    #print('mean_mean',mean_mean)
-                    #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                    print('local Optima')
+                    print(self.model_index)
+                    print('y_mean',y_mean)
+                    print('mean_mean',mean_mean)
+                    print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
     
@@ -445,10 +446,7 @@ class Fit_GPcounts(object):
         genes_means = []
         genes_vars = []
         self.Y = self.Y_copy
-      
         self.lik_name = lik_name
-        if self.lik_name =='Gaussian':    
-            self.Y = np.log(self.Y+1)
         
         if test == 'One_sample_test':
             self.models_number = 2
@@ -462,8 +460,9 @@ class Fit_GPcounts(object):
             means = []
             variances = []
             self.index = self.genes_name.index(gene)
-
+           
             for model_index in range(self.models_number):
+               
                 self.optimize = False
                 self.model_index = model_index + 1
                 self.init_hyper_parameters(False) 
@@ -471,7 +470,7 @@ class Fit_GPcounts(object):
                
                 if self.models_number == 3:
                     X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
-                    Y_df = pd.DataFrame(data=self.Y,index= self.genes_name,columns= self.cells_name)
+                    Y_df = pd.DataFrame(data=self.Y_copy,index= self.genes_name,columns= self.cells_name)
                     
                     if model_index == 0:
                         self.set_X_Y(X_df,Y_df)
@@ -483,10 +482,12 @@ class Fit_GPcounts(object):
                     if model_index == 2:
                         # initialize X and Y with second time series
                         self.set_X_Y(X_df[int(self.N/2) : :],Y_df.iloc[:,int(self.N/2) : :])
- 
+                    
+                    #if self.lik_name =='Gaussian':    
+                    #    self.Y = np.log(self.Y+1)
+                    
                 self.y = self.Y[self.index]
                 self.y = self.y.reshape([self.N,1])
-                
                 successed_fit = self.fit_GP()
                 # restore check point
                 if successed_fit:
@@ -495,6 +496,8 @@ class Fit_GPcounts(object):
 
                     if self.lik_name == 'Gaussian':
                         mean, var = self.model.predict_y(xtest)
+                        mean = mean.numpy()
+                        var = var.numpy()
 
                     else:
                         mean, var = self.samples_posterior_predictive_distribution(xtest)
