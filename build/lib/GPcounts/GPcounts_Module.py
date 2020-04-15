@@ -11,7 +11,8 @@ import pandas as pd
 from gpflow.utilities import set_trainable
 from tqdm import tqdm
 from scipy.signal import savgol_filter
-#import pickle
+from matplotlib import pyplot as plt
+import statsmodels.api as sm
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -220,7 +221,7 @@ class Fit_GPcounts(object):
             fit = self.fit_GP_with_likelihood()
         except tf.errors.InvalidArgumentError as e:
             if self.count_fix < 10:
-                print('Fit Cholesky decomposition was not successful.')
+                #print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
             else:
@@ -261,7 +262,7 @@ class Fit_GPcounts(object):
             alpha = self.hyper_parameters['alpha']
             km = self.hyper_parameters['km']
             likelihood = NegativeBinomialLikelihood.ZeroInflatedNegativeBinomial(alpha,km)
-       
+
         # Run model with selected kernel and likelihood  
         if self.lik_name == 'Gaussian':
             self.y = np.log(self.y+1)
@@ -283,11 +284,11 @@ class Fit_GPcounts(object):
 
             if not(res.success):
                 if self.count_fix < 10:
-                    print('Optimization fail.')
+                    #print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
                 else:
-                    print('Can not fit a Gaussian process, Optimization fail.')
+                    #print('Can not fit a Gaussian process, Optimization fail.')
                     fit = False
         return fit
 
@@ -377,22 +378,31 @@ class Fit_GPcounts(object):
            
             y_mean = np.mean(self.y)
             mean_mean = np.mean(self.mean) 
-            #print('local Optima')
             #print('y_mean',y_mean)
             #print('mean_mean',mean_mean)
-            #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+            y_max = np.max(self.y)
+            mean_max = np.max(self.mean)
+            #print('y_max',y_max)
+            #print('mean_max',mean_max)
+            y_min = np.abs(np.min(self.y))
+            mean_min = np.abs(np.min(self.mean))
+            #print('y_min',y_min)
+            #print('mean_min',mean_min)
+            #print('abs(round((mean_mean-y_mean)/y_mean))',round((mean_mean-y_mean)/y_mean))
+                
             if self.N < 100:
                 diff = 0
             else:
                 diff = 1
                 
-            if y_mean > 0.0:
-                if abs(round((mean_mean-y_mean)/y_mean)) > diff or mean_mean == 0.0:
-                    print('local Optima')
-                    print(self.model_index)
-                    print('y_mean',y_mean)
-                    print('mean_mean',mean_mean)
-                    print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+            if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
+                if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
+                    #print('local Optima')
+                    #print(self.model_index)
+                    #print('y_mean',y_mean)
+                    #print('mean_mean',mean_mean)
+                    #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                    #self.plot(xtest)
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
     
@@ -521,3 +531,48 @@ class Fit_GPcounts(object):
 
         return params
     
+    def plot(self,xtest):
+        plt.tick_params(labelsize='large', width=2)     
+        #plt.ylabel('Gene Expression', fontsize=16)
+        #plt.xlabel('Times', fontsize=16)
+        c = 'royalblue'
+
+        if self.model_index == 3:
+            c = 'green'
+
+        plt.plot(xtest, self.mean,color= c, lw=2) 
+
+        if self.lik_name == 'Gaussian':
+            plt.fill_between(xtest[:,0],
+                                self.mean[:,0] - 1*np.sqrt(self.var[:,0]),
+                                self.mean[:,0] + 1*np.sqrt(self.var[:,0]),color=c,alpha=0.2) # one standard deviation
+            plt.fill_between(xtest[:,0],
+                                self.mean[:,0] - 2*np.sqrt(self.var[:,0]),
+                                self.mean[:,0] + 2*np.sqrt(self.var[:,0]),color=c, alpha=0.1)# two standard deviation
+        else:
+
+            lowess = sm.nonparametric.lowess    
+            # one standard deviation 68%
+            percentile_16 = lowess(np.percentile(var, 16, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            percentile_16 = [(i > 0) * i for i in percentile_16]
+            percentile_84 = lowess(np.percentile(var, 84, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            percentile_84 = [(i > 0) * i for i in percentile_84]
+            plt.fill_between(xtest[:,0],percentile_16,percentile_84,color=c,alpha=0.2)
+
+            # two standard deviation 95%
+            percentile_5 = lowess(np.percentile(var, 5, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            percentile_5 = [(i > 0) * i for i in percentile_5]
+            percentile_95 = lowess(np.percentile(var,95, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+            percentile_95 = [(i > 0) * i for i in percentile_95]
+            plt.fill_between(xtest[:,0],percentile_5,percentile_95,color=c,alpha=0.1)
+
+        if self.models_number == 3 and self.model_index == 1:
+            plt.scatter(self.model.data[0][0:int(self.model.data[0].shape[0]/2)],model.data[1][0:int(model.data[0].shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data    
+            plt.scatter(model.data[0][int(model.data[0].shape[0]/2)::],model.data[1][int(model.data[0].shape[0]/2)::], s=30, marker='o', color= 'green',alpha=1.) #data
+
+        else: 
+            plt.scatter(self.model.data[0],self.model.data[1],s=30,marker = 'o',color=c,alpha=1.)
+
+        if not(self.models_number == 3 and self.model_index == 2):
+            plt.show()
+
