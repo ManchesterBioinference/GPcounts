@@ -135,31 +135,33 @@ class Fit_GPcounts(object):
             if self.models_number == 2:
                 if not(np.isnan(model_1_log_likelihood)):
                     ls , km_1 = self.record_hyper_parameters()
-                    
-                self.model_index = 2
-                model_2_log_likelihood = self.fit_model()
-                  
+
+                    self.model_index = 2
+                    model_2_log_likelihood = self.fit_model()
+
+                    if not(np.isnan(model_2_log_likelihood)):
+                        if self.lik_name == 'Zero_inflated_negative_binomial':
+                            km_2 = self.model.likelihood.km.numpy()
+
+                         #test local optima case 2 
+                        ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+
+                        if (ls < ((np.max(self.X)-np.min(self.X))/10.) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
+                            self.model_index = 1
+                            self.init_hyper_parameters(True)
+                            model_1_log_likelihood = self.fit_model()
+                            if not(np.isnan(model_1_log_likelihood)):
+                                ls , km_1 = self.record_hyper_parameters()
+                            self.model_index = 2
+                            self.init_hyper_parameters(True)
+                            model_2_log_likelihood = self.fit_model()
+
+                        ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+
                 if np.isnan(model_1_log_likelihood) or np.isnan(model_2_log_likelihood):
+                    model_2_log_likelihood = np.nan
                     ll_ratio = np.nan
-                else:
-                    if self.lik_name == 'Zero_inflated_negative_binomial':
-                        km_2 = self.model.likelihood.km.numpy()
-                    
-                     #test local optima case 2 
-                    ll_ratio = model_1_log_likelihood - model_2_log_likelihood
-
-                    if (ls < ((np.max(self.X)-np.min(self.X))/10.) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
-                        self.model_index = 1
-                        self.init_hyper_parameters(True)
-                        model_1_log_likelihood = self.fit_model()
-                        if not(np.isnan(model_1_log_likelihood)):
-                            ls , km_1 = self.record_hyper_parameters()
-                        self.model_index = 2
-                        self.init_hyper_parameters(True)
-                        model_2_log_likelihood = self.fit_model()
-                    
-                    ll_ratio = model_1_log_likelihood - model_2_log_likelihood
-
+                
                 log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio]                          
             if self.models_number == 3:
                 
@@ -211,19 +213,24 @@ class Fit_GPcounts(object):
         else:
             log_likelihood = np.nan  # set to Nan in case of Cholesky decomposition failure
             self.model = np.nan
-            
+           
         return log_likelihood
-     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1       
+    
+    # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1       
     def fit_GP(self,reset = False):
         self.init_hyper_parameters(reset)
+        print(self.hyper_parameters)
         fit = True   
         try:
             fit = self.fit_GP_with_likelihood()
+            
         except tf.errors.InvalidArgumentError as e:
+            print(self.count_fix)
             if self.count_fix < 10:
-                #print('Fit Cholesky decomposition was not successful.')
+                print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
+                
             else:
                 print('Can not fit a Gaussian process, Cholesky decomposition was not successful.')
                 fit = False
@@ -284,12 +291,12 @@ class Fit_GPcounts(object):
 
             if not(res.success):
                 if self.count_fix < 10:
-                    #print('Optimization fail.')
+                    print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
                 else:
-                    #print('Can not fit a Gaussian process, Optimization fail.')
-                    fit = False
+                    print('Can not Optimaize a Gaussian process, Optimization fail.')
+                    #fit = False
         return fit
 
     def record_hyper_parameters(self):
@@ -328,22 +335,30 @@ class Fit_GPcounts(object):
         
         if reset:
             self.seed_value = self.seed_value + 1
+            np.random.seed(self.seed_value)
+            self.hyper_parameters['ls'] = np.random.uniform(np.percentile(np.unique(self.X),1)  ,np.percentile(np.unique(self.X),20))
+            self.hyper_parameters['var'] = np.random.uniform(np.percentile(np.unique(self.X),1)  ,np.percentile(np.unique(self.X),30))
+            self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
+            self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
+
              
         else:   
             self.seed_value = 0
             self.count_fix = 0 
-            
-        np.random.seed(self.seed_value)
-        self.hyper_parameters['ls'] = np.random.uniform(0. , (np.max(self.X)-np.min(self.X))/10.)    
-        self.hyper_parameters['var'] = np.random.uniform(1., 20.)
-        self.hyper_parameters['alpha'] = np.random.uniform(1., 10.)
-        self.hyper_parameters['km'] = np.random.uniform(0., 50.)       
+            np.random.seed(self.seed_value)
+            self.hyper_parameters['ls'] = np.percentile(np.unique(self.X),10) 
+            self.hyper_parameters['var'] = np.percentile(np.unique(self.X),15)
+            self.hyper_parameters['alpha'] = 5.
+            self.hyper_parameters['km'] = 35.  
+
             
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000. # constant kernel
+            
             if self.optimize:
                 if self.lik_name == 'Negative_binomial':
                     self.hyper_parameters['alpha'] = self.lik_alpha
+            
 
         else:
             #save likelihood parameters to initialize constant model
@@ -397,11 +412,11 @@ class Fit_GPcounts(object):
                 
             if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
                 if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
-                    #print('local Optima')
-                    #print(self.model_index)
-                    #print('y_mean',y_mean)
-                    #print('mean_mean',mean_mean)
-                    #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                    print('local Optima')
+                    print(self.model_index)
+                    print('y_mean',y_mean)
+                    print('mean_mean',mean_mean)
+                    print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
                     #self.plot(xtest)
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
@@ -492,9 +507,6 @@ class Fit_GPcounts(object):
                     if model_index == 2:
                         # initialize X and Y with second time series
                         self.set_X_Y(X_df[int(self.N/2) : :],Y_df.iloc[:,int(self.N/2) : :])
-                    
-                    #if self.lik_name =='Gaussian':    
-                    #    self.Y = np.log(self.Y+1)
                     
                 self.y = self.Y[self.index]
                 self.y = self.y.reshape([self.N,1])
