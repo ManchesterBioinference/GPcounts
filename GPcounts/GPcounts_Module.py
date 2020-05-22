@@ -151,7 +151,7 @@ class Fit_GPcounts(object):
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
                         var_ratio = model_1_variance - model_2_variance
 
-                        if (ls < ((10*(len(self.X)))/100) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
+                        if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                             self.model_index = 1
                             self.init_hyper_parameters(True)
                             model_1_log_likelihood = self.fit_model()
@@ -348,8 +348,9 @@ class Fit_GPcounts(object):
         if reset:
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.random.uniform((1*(len(self.X)))/100 ,(30*(len(self.X)))/100)
-            self.hyper_parameters['var'] = np.random.uniform((1*(len(self.X)))/100 ,(40*(len(self.X)))/100)
+            self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(30*(np.max(self.X)-np.min(self.X)))/100)
+            self.hyper_parameters['var'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(50*(np.max(self.X)-np.min(self.X)))/100)
+
             self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
             self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
 
@@ -357,8 +358,8 @@ class Fit_GPcounts(object):
             self.seed_value = 0
             self.count_fix = 0 
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = (10*(len(self.X)))/100
-            self.hyper_parameters['var'] = (5*(len(self.X)))/100
+            self.hyper_parameters['ls'] = (10*(np.max(self.X)-np.min(self.X)))/100
+            self.hyper_parameters['var'] = (30*(np.max(self.X)-np.min(self.X)))/100
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
 
@@ -555,7 +556,7 @@ class Fit_GPcounts(object):
         params['models']= genes_models
 
         return params
-   ''' 
+''' 
     def plot(self,xtest):
         plt.tick_params(labelsize='large', width=2)     
         #plt.ylabel('Gene Expression', fontsize=16)
@@ -601,6 +602,7 @@ class Fit_GPcounts(object):
         if not(self.models_number == 3 and self.model_index == 2):
             plt.show()
             
-       '''
+'''
+
 
 
