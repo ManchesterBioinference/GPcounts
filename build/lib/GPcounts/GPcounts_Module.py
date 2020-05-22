@@ -71,7 +71,7 @@ class Fit_GPcounts(object):
             self.X = X.values.astype(float) # time points 
             self.X = self.X.reshape([-1,1])
             if self.sparse:
-                self.M = int((len(self.X))/10) # number of inducing point
+                self.M = int((10*(len(self.X)))/100) # number of inducing point
                 # set inducing points by Kmean cluster
                 kmeans = KMeans(n_clusters= self.M, random_state=0).fit(self.X)
                 self.Z = kmeans.cluster_centers_
@@ -109,6 +109,7 @@ class Fit_GPcounts(object):
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,branching = False):
         genes_log_likelihoods = {}
+        genes_variances = {}
         self.Y = self.Y_copy
         self.models_number = models_number
         self.lik_name = lik_name
@@ -130,7 +131,9 @@ class Fit_GPcounts(object):
       
             self.model_index = 1  
             model_1_log_likelihood = self.fit_model()
+            model_1_variance = self.model.kernel.variance.numpy()
             log_likelihood =  [model_1_log_likelihood]
+            variance = [model_1_variance]
             
             if self.models_number == 2:
                 if not(np.isnan(model_1_log_likelihood)):
@@ -138,6 +141,7 @@ class Fit_GPcounts(object):
 
                     self.model_index = 2
                     model_2_log_likelihood = self.fit_model()
+                    model_2_variance = self.model.kernel.variance.numpy()
 
                     if not(np.isnan(model_2_log_likelihood)):
                         if self.lik_name == 'Zero_inflated_negative_binomial':
@@ -145,24 +149,31 @@ class Fit_GPcounts(object):
 
                          #test local optima case 2 
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+                        var_ratio = model_1_variance - model_2_variance
 
-                        if (ls < ((np.max(self.X)-np.min(self.X))/10.) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
+                        if (ls < ((10*(len(self.X)))/100) and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                             self.model_index = 1
                             self.init_hyper_parameters(True)
                             model_1_log_likelihood = self.fit_model()
+                            model_1_variance = self.model.kernel.variance.numpy()
+                            
                             if not(np.isnan(model_1_log_likelihood)):
                                 ls , km_1 = self.record_hyper_parameters()
                             self.model_index = 2
                             self.init_hyper_parameters(True)
                             model_2_log_likelihood = self.fit_model()
+                            model_2_variance = self.model.kernel.variance.numpy()
 
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+                        var_ratio = model_1_variance - model_2_variance
 
                 if np.isnan(model_1_log_likelihood) or np.isnan(model_2_log_likelihood):
                     model_2_log_likelihood = np.nan
                     ll_ratio = np.nan
                 
-                log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio]                          
+                log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio] 
+                variance = [model_1_variance,model_2_variance,var_ratio]
+                
             if self.models_number == 3:
                 
                 X_df = pd.DataFrame(data=self.X,index= self.cells_name,columns= ['times'])
@@ -194,8 +205,9 @@ class Fit_GPcounts(object):
                 log_likelihood = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio]
             
             genes_log_likelihoods[self.genes_name[self.index]] = log_likelihood
+            genes_variances[self.genes_name[self.index]] = variance
          
-        return pd.DataFrame.from_dict(genes_log_likelihoods, orient='index', columns= column_name)
+        return pd.DataFrame.from_dict(genes_log_likelihoods, orient='index', columns= column_name),pd.DataFrame.from_dict(genes_variances, orient='index', columns= column_name)
    
     
     # fit a Gaussian process, get the log likelihood and save the model for a gene 
@@ -219,7 +231,7 @@ class Fit_GPcounts(object):
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1       
     def fit_GP(self,reset = False):
         self.init_hyper_parameters(reset)
-        print(self.hyper_parameters)
+        #print(self.hyper_parameters)
         fit = True   
         try:
             fit = self.fit_GP_with_likelihood()
@@ -227,7 +239,7 @@ class Fit_GPcounts(object):
         except tf.errors.InvalidArgumentError as e:
             print(self.count_fix)
             if self.count_fix < 10:
-                print('Fit Cholesky decomposition was not successful.')
+                #print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
                 
@@ -291,7 +303,7 @@ class Fit_GPcounts(object):
 
             if not(res.success):
                 if self.count_fix < 10:
-                    print('Optimization fail.')
+                    #print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
                 else:
@@ -336,18 +348,17 @@ class Fit_GPcounts(object):
         if reset:
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.random.uniform(np.percentile(np.unique(self.X),1)  ,np.percentile(np.unique(self.X),20))
-            self.hyper_parameters['var'] = np.random.uniform(np.percentile(np.unique(self.X),1)  ,np.percentile(np.unique(self.X),30))
+            self.hyper_parameters['ls'] = np.random.uniform((1*(len(self.X)))/100 ,(30*(len(self.X)))/100)
+            self.hyper_parameters['var'] = np.random.uniform((1*(len(self.X)))/100 ,(40*(len(self.X)))/100)
             self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
             self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
 
-             
         else:   
             self.seed_value = 0
             self.count_fix = 0 
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.percentile(np.unique(self.X),10) 
-            self.hyper_parameters['var'] = np.percentile(np.unique(self.X),15)
+            self.hyper_parameters['ls'] = (10*(len(self.X)))/100
+            self.hyper_parameters['var'] = (5*(len(self.X)))/100
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
 
@@ -412,11 +423,13 @@ class Fit_GPcounts(object):
                 
             if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
                 if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
+                    '''
                     print('local Optima')
                     print(self.model_index)
                     print('y_mean',y_mean)
                     print('mean_mean',mean_mean)
                     print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                    '''
                     #self.plot(xtest)
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
@@ -542,7 +555,7 @@ class Fit_GPcounts(object):
         params['models']= genes_models
 
         return params
-    
+   ''' 
     def plot(self,xtest):
         plt.tick_params(labelsize='large', width=2)     
         #plt.ylabel('Gene Expression', fontsize=16)
@@ -587,4 +600,7 @@ class Fit_GPcounts(object):
 
         if not(self.models_number == 3 and self.model_index == 2):
             plt.show()
+            
+       '''
+
 
