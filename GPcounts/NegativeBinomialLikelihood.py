@@ -6,7 +6,7 @@ from gpflow.config import default_float
 from gpflow.utilities import positive
 
 class NegativeBinomial(ScalarLikelihood):
-    def __init__(self, alpha= 1.0 ,invlink=tf.exp, **kwargs):
+    def __init__(self, alpha= 1.0,invlink=tf.exp, **kwargs):
         super().__init__( **kwargs)
         self.alpha = Parameter(alpha,
                                transform= positive(),
@@ -24,7 +24,7 @@ class NegativeBinomial(ScalarLikelihood):
         return tf.lgamma(k + Y) - tf.lgamma(Y + 1) - tf.lgamma(k) + Y * tf.log(m / (m + k)) - k * tf.log(1 + m * self.alpha) 
         '''
         
-        return negative_binomial(self.invlink(F), Y, self.alpha)
+        return negative_binomial(self.invlink(F) , Y, self.alpha)
     
     def _conditional_mean(self, F):
         return self.invlink(F)

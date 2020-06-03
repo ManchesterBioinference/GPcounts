@@ -11,6 +11,8 @@ import pandas as pd
 from gpflow.utilities import set_trainable
 from tqdm import tqdm
 from scipy.signal import savgol_filter
+import random
+
 from matplotlib import pyplot as plt
 import statsmodels.api as sm
 
@@ -53,7 +55,8 @@ class Fit_GPcounts(object):
         self.hyper_parameters = {} # model paramaters initialization
         self.models_number = None # Total number of models to fit for single gene
         self.model_index = None # index the current model
-        self.model = None      
+        self.model = None    
+        self.scale = None
         self.branching = None # DE kernel or RBF kernel
         self.xp = -1000. # Put branching time much earlier than zero time
         self.var = None 
@@ -69,16 +72,17 @@ class Fit_GPcounts(object):
         if X.shape[0] == Y.shape[1]:
             self.X = X
             self.cells_name = self.X.index.values # gene expression name
-            self.X = X.values.astype(float) # time points 
+            self.X = np.asarray([float(x) for [x] in X.values.astype(float)])
+            #X.values.astype(float) # time points 
             self.X = self.X.reshape([-1,1])
             if self.sparse:
-                self.M = int((10*(len(self.X)))/100) # number of inducing point
+                self.M = int((5*(len(self.X)))/100) # number of inducing point
                 # set inducing points by Kmean cluster
-                kmeans = KMeans(n_clusters= self.M, random_state=0).fit(self.X)
+                kmeans = KMeans(n_clusters= self.M).fit(self.X)
                 self.Z = kmeans.cluster_centers_
                 self.Z = np.sort(self.Z,axis=None).reshape([self.M,1])
                 self.Z = self.Z.reshape([self.Z.shape[0],1])
-             
+              
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
             self.Y = self.Y.values.astype(int) # gene expression matrix
@@ -88,19 +92,25 @@ class Fit_GPcounts(object):
         else:
             print('InvalidArgumentError: Dimension 0 in X shape must be equal to Dimension 1 in Y, but shapes are %d and %d.' %(X.shape[0],Y.shape[1]))
     
-    def Infer_trajectory(self,lik_name= 'Negative_binomial'):
+    def Infer_trajectory(self,lik_name= 'Negative_binomial',mean_function = None):
+        if mean_function is not None:
+            self.scale = np.array(mean_function).T 
         log_likelihood = self.run_test(lik_name,1)
         return log_likelihood
         
-    def One_sample_test(self,lik_name= 'Negative_binomial'):
+    def One_sample_test(self,lik_name= 'Negative_binomial',mean_function = None):
+        if mean_function is not None:
+            self.scale = np.array(mean_function).T 
         log_likelihood = self.run_test(lik_name,2)
         return log_likelihood
         
-    def Two_samples_test(self,lik_name= 'Negative_binomial'):
+    def Two_samples_test(self,lik_name= 'Negative_binomial',mean_function = None):
+        if mean_function is not None:
+            self.scale = np.array(mean_function).T 
         log_likelihood = self.run_test(lik_name,3)
         return log_likelihood
     
-    def Infer_trajectory_with_branching_kernel(self,cell_labels,bins_num = 50,lik_name= 'Negative_binomial'):
+    def Infer_trajectory_with_branching_kernel(self,cell_labels,bins_num = 50,lik_name= 'Negative_binomial',mean_function = None):
          # note how to implement this    
         cell_labels = np.array(cell_labels)
         self.X = np.c_[self.X,cell_labels[:,None]]
@@ -206,10 +216,11 @@ class Fit_GPcounts(object):
         successed_fit = self.fit_GP()
         
         if successed_fit:
-            if self.sparse:
+            if self.sparse and self.lik_name is not 'Gaussian':
                 log_likelihood = self.model.log_posterior_density((self.X,self.y)).numpy()
             else:
                 log_likelihood = self.model.log_posterior_density().numpy()
+            
             filename = self.get_file_name()
             ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
             ckpt.write(filename)
@@ -232,7 +243,7 @@ class Fit_GPcounts(object):
             #print(self.count_fix)
             self.fail.append(self.genes_name[self.index])
             if self.count_fix < 10:
-                print('Fit Cholesky decomposition was not successful.')
+                #print('Fit Cholesky decomposition was not successful.')
                 self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
                 
@@ -274,26 +285,32 @@ class Fit_GPcounts(object):
             alpha = self.hyper_parameters['alpha']
             km = self.hyper_parameters['km']
             likelihood = NegativeBinomialLikelihood.ZeroInflatedNegativeBinomial(alpha,km)
-
+       
+        if self.scale is not None:
+            mean_function = gpflow.mean_functions.Linear(self.scale)
+            set_trainable(mean_function,False) 
+        else:
+            mean_function = None
+            
         # Run model with selected kernel and likelihood  
         if self.lik_name == 'Gaussian':
             self.y = np.log(self.y+1)
             
             if self.sparse:
                 self.model =  gpflow.models.SGPR((self.X,self.y), kernel=kern,inducing_variable=self.Z)
+                #set_trainable(self.model.inducing_variable.Z, False)
             else:
-                self.model = gpflow.models.GPR((self.X,self.y), kern)
+                self.model = gpflow.models.GPR((self.X,self.y), kern,mean_function)
                 
             training_loss = self.model.training_loss
         else:
-            
-            
+                        
             if self.sparse:
                 self.model = gpflow.models.SVGP( kern ,likelihood,self.Z) 
                 training_loss = self.model.training_loss_closure((self.X, self.y.astype(float)))
-         
+                #set_trainable(self.model.inducing_variable.Z, False)
             else:
-                self.model = gpflow.models.VGP((self.X, self.y) , kern , likelihood) 
+                self.model = gpflow.models.VGP((self.X, self.y) , kern , likelihood,mean_function) 
                 training_loss = self.model.training_loss
                 
         if self.optimize:
@@ -303,7 +320,7 @@ class Fit_GPcounts(object):
             if not(res.success):
                 self.fail.append(self.genes_name[self.index])
                 if self.count_fix < 10:
-                    print('Optimization fail.')
+                    #print('Optimization fail.')
                     self.count_fix = self.count_fix +1 
                     fit = self.fit_GP(True)
                     
@@ -428,13 +445,13 @@ class Fit_GPcounts(object):
                 
             if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
                 if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
-                    
+                    '''
                     print('local Optima')
                     print(self.model_index)
                     print('y_mean',y_mean)
                     print('mean_mean',mean_mean)
                     print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
-                    
+                    '''
                     self.fail.append(self.genes_name[self.index])
                     #self.plot(xtest)
                     self.count_fix = self.count_fix +1 
@@ -444,7 +461,6 @@ class Fit_GPcounts(object):
         
         y = []
         if self.lik_name == 'Poisson':
-            print(mean)
             for i in range(mean.shape[0]):
                 y.append(ss.poisson.rvs(mean[i], size = 500))
 
@@ -479,7 +495,7 @@ class Fit_GPcounts(object):
             var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
 
         var = np.vstack(var)
-        
+        mean = np.mean(var,axis = 0)
         mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
         mean = [(i > 0) * i for i in mean]
         return mean,var
