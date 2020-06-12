@@ -22,6 +22,7 @@ class NegativeBinomial(ScalarLikelihood):
         k = 1 / self.alpha
                        
         return tf.lgamma(k + Y) - tf.lgamma(Y + 1) - tf.lgamma(k) + Y * tf.log(m / (m + k)) - k * tf.log(1 + m * self.alpha) 
+        
         '''
         
         return negative_binomial(self.invlink(F) , Y, self.alpha)

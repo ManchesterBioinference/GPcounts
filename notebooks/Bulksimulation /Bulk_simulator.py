@@ -97,7 +97,7 @@ for ms in tqdm(mean_scale):
             
             multiplier = multiplier + ms
             
-            for i in range(6): ## 5  
+            for i in range(8): ## 5  
                 #print(i)
                 #fig = plt.figure(figsize=(6,15))
                 
