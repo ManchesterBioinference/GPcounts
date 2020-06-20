@@ -14,9 +14,8 @@ from scipy.signal import savgol_filter
 import random
 import time
 import datetime
-
-from matplotlib import pyplot as plt
-import statsmodels.api as sm
+#from matplotlib import pyplot as plt
+#import statsmodels.api as sm
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -35,7 +34,7 @@ class Fit_GPcounts(object):
         if grid_search: # use grid search to find the best length scale
             self.gs = gs
             if len(self.gs) == 0: 
-                self.gs = [.5,3,5,7,10]
+                self.gs = [.5,3,10,15,25,40]
             self.optimize_ls = False
                 
         else:         
@@ -78,6 +77,7 @@ class Fit_GPcounts(object):
         # single gene information  
         self.y = None
         self.index = None
+        self.global_seed = 0
         self.seed_value = 0 # initialize seed 
         self.count_fix = 0 # counter of number of trails to resolve either local optima or failure duo to numerical issues
         
@@ -115,35 +115,103 @@ class Fit_GPcounts(object):
             print('InvalidArgumentError: Dimension 0 in X shape must be equal to Dimension 1 in Y, but shapes are %d and %d.' %(X.shape[0],Y.shape[1]))
         
     
-    def Infer_trajectory(self,lik_name= 'Negative_binomial',transform = True):
-        self.transform = transform
-        log_likelihood = self.run_test(lik_name,1)
-        return log_likelihood
+    def Infer_trajectory(self,lik_name= 'Negative_binomial',transform = True): 
+        '''
+        for i in range(3):
+            self.transform = transform
+            if i == 0:
+                self.global_seed = 0
+                genes_index = range(self.D) # run test on all genes
+                
+            else:
+                self.global_seed= i*15 # shift seed to samples new values
+                
+            results = self.run_test(lik_name,1,genes_index) 
+            # in case of anomalies update them with new values
+            if i == 0:
+                    genes_results = results
+            else:
+                 genes_results.iloc[genes_index,:]= results.values
+                    
+            genes_index = self.find_anomalies(genes_results['Dynamic_model_log_likelihood'].values)
+            
+            if len(genes_index) == 0:
+                break
+           '''
+        genes_index = range(self.D)
+        genes_results = self.run_test(lik_name,1,genes_index)
+        
+        return genes_results
         
     def One_sample_test(self,lik_name= 'Negative_binomial',transform = True):
-        self.transform = transform
-        log_likelihood = self.run_test(lik_name,2)
-        return log_likelihood
+        '''
+        for i in range(3):
+            self.transform = transform
+            if i == 0:
+                self.global_seed = 0
+                genes_index = range(self.D) # run test on all genes
+                
+            else:
+                self.global_seed= i*15 # shift seed to samples new values
+                
+            results = self.run_test(lik_name,2,genes_index) 
+            # in case of anomalies update them with new values
+            if i == 0:
+                    genes_results = results
+            else:
+                 genes_results.iloc[genes_index,:]= results.values
+                    
+            genes_index = self.find_anomalies(genes_results['log_likelihood_ratio'].values)
+            
+            if len(genes_index) == 0:
+                break
+        '''
+        genes_index = range(self.D)
+        genes_results = self.run_test(lik_name,2,genes_index)
+        genes_results.loc[genes_results['log_likelihood_ratio'] < 0 , 'log_likelihood_ratio'] = 0
+        
+        return genes_results
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
-        self.transform = transform
-        log_likelihood = self.run_test(lik_name,3)
-        return log_likelihood
+        '''
+        for i in range(3):
+            self.transform = transform
+            if i == 0:
+                self.global_seed = 0
+                genes_index = range(self.D) # run test on all genes
+                
+            else:
+                self.global_seed= i*15 # shift seed to samples new values
+                
+            results = self.run_test(lik_name,3,genes_index) 
+            # in case of anomalies update them with new values
+            if i == 0:
+                    genes_results = results
+            else:
+                 genes_results.iloc[genes_index,:]= results.values
+                    
+            genes_index = self.find_anomalies(genes_results['log_likelihood_ratio'].values)
+            
+            if len(genes_index) == 0:
+                break
+        '''
+        genes_index = range(self.D)
+        genes_results = self.run_test(lik_name,3,genes_index)
+        genes_results.loc[genes_results['log_likelihood_ratio'] < 0 , 'log_likelihood_ratio'] = 0
+        return genes_results
     
     def Infer_trajectory_with_branching_kernel(self,cell_labels,bins_num = 50,lik_name= 'Negative_binomial',transform = False):
          # note how to implement this    
         cell_labels = np.array(cell_labels)
         self.X = np.c_[self.X,cell_labels[:,None]]
         self.branching = True
-        log_likelihood = self.run_test(lik_name,1)
-        return log_likelihood
+        results = self.run_test(lik_name,1)
+        return results
      
     # Run the selected test and get likelihoods for all genes   
-    def run_test(self,lik_name,models_number):
+    def run_test(self,lik_name,models_number,genes_index):
         
-        genes_log_likelihoods = {}
-        genes_fitting_time = {}
-        genes_failure_count = {} 
+        genes_results = {}
         self.Y = self.Y_copy
         self.models_number = models_number
         self.lik_name = lik_name
@@ -151,17 +219,17 @@ class Fit_GPcounts(object):
         
         #column names for likelihood dataframe
         if self.models_number == 1:
-            column_name = ['Dynamic_model_log_likelihood','time','failure counter']
+            column_name = ['Dynamic_model_log_likelihood','Dynamic_time']
         elif self.models_number == 2:
-            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio','time','failure counter']
+            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio','Dynamic_time','Constant_time']
         else:
-            column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio','time','failure counter'] 
+            column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio','Shared_model_time','model_1_time','model_2_time'] 
         
-        for self.index in tqdm(range(self.D)):
+        for self.index in tqdm(genes_index):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
-           
+             
             if len(self.gs) > 1: #grid search 
                 self.optimize_ls = False      
                 log_likelihood, best_index = self.fit_single_gene(self.gs,column_name)
@@ -175,11 +243,11 @@ class Fit_GPcounts(object):
             
             if len(gs)>0: # not empty list 
                 self.optimize_ls = True # optimize for the best length scale
-                log_likelihood, best_index = self.fit_single_gene(gs,column_name)
+                results, best_index = self.fit_single_gene(gs,column_name)
 
-            genes_log_likelihoods[self.genes_name[self.index]] = log_likelihood
+            genes_results[self.genes_name[self.index]] = results
 
-        return pd.DataFrame.from_dict(genes_log_likelihoods, orient='index', columns= column_name)
+        return pd.DataFrame.from_dict(genes_results, orient='index', columns= column_name)
     
     # fit numbers of GPs = models_number to run the selected test
     def fit_single_gene(self,gs,column_name,reset =False):
@@ -189,22 +257,21 @@ class Fit_GPcounts(object):
             col_name = 2
         
         best_index = None # index of the best value of length scales selected by grid search
-        local_likelihood = {} # save likelihoods of different length scales to select the best one   
+        local_results = {} # save results of different length scales to select the best one   
         
         for self.gs_item in gs:
-            start = time.time() # start time to fit a gene
             
             self.model_index = 1  
-            model_1_log_likelihood = self.fit_model()
-            log_likelihood =  [model_1_log_likelihood]
-
+            model_1_log_likelihood,model_1_time = self.fit_model()
+            results =  [model_1_log_likelihood,model_1_time]
+            
             if self.models_number == 2:
                 if not(np.isnan(model_1_log_likelihood)):
                     ls , km_1 = self.record_hyper_parameters()
-
+            
                     self.model_index = 2
-                    model_2_log_likelihood = self.fit_model()
-
+                    model_2_log_likelihood,model_2_time = self.fit_model()
+                    
                     if not(np.isnan(model_2_log_likelihood)):
 
                         if self.lik_name == 'Zero_inflated_negative_binomial':
@@ -216,13 +283,13 @@ class Fit_GPcounts(object):
                             if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                                 self.model_index = 1
                                 reset = True
-                                model_1_log_likelihood = self.fit_model(reset)
+                                model_1_log_likelihood,model_1_time = self.fit_model(reset)
 
                                 if not(np.isnan(model_1_log_likelihood)):
                                     ls , km_1 = self.record_hyper_parameters()
                                 self.model_index = 2
                                 reset = True
-                                model_2_log_likelihood = self.fit_model(reset)
+                                model_2_log_likelihood,model_2_time = self.fit_model(reset)
 
                                 ll_ratio = model_1_log_likelihood - model_2_log_likelihood
 
@@ -230,7 +297,7 @@ class Fit_GPcounts(object):
                     model_2_log_likelihood = np.nan
                     ll_ratio = np.nan
 
-                log_likelihood =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio] 
+                results =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio,model_1_time,model_1_time] 
 
             if self.models_number == 3:
 
@@ -243,7 +310,7 @@ class Fit_GPcounts(object):
                 self.y = self.y.reshape([self.N,1])
 
                 self.model_index = 2
-                model_2_log_likelihood = self.fit_model() 
+                model_2_log_likelihood,model_2_time = self.fit_model() 
 
                 # initialize X and Y with second time series
                 self.set_X_Y(X_df[self.N : :],Y_df.iloc[:,int(self.N) : :])
@@ -251,7 +318,7 @@ class Fit_GPcounts(object):
                 self.y = self.y.reshape([self.N,1])
 
                 self.model_index = 3
-                model_3_log_likelihood = self.fit_model()
+                model_3_log_likelihood,model_3_time = self.fit_model()
 
                 self.set_X_Y(X_df,Y_df)
 
@@ -260,37 +327,30 @@ class Fit_GPcounts(object):
                 else:
                     ll_ratio = ((model_2_log_likelihood+model_3_log_likelihood)-model_1_log_likelihood)
 
-                log_likelihood = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio]
+                results = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio,model_1_time,model_2_time,model_3_time]
   
-            end = time.time() # end time to fit a gene  
-            log_likelihood.append(str(datetime.timedelta(seconds=end - start))) # append execution time 
-            log_likelihood.append(self.count_fix) # append number of failure  
-            local_likelihood[self.gs_item]=log_likelihood
+            local_results[self.gs_item]=results
 
-        local_likelihood = pd.DataFrame.from_dict(local_likelihood, orient='index',columns= column_name)
-        local_likelihood=local_likelihood.dropna() 
-        #print(local_likelihood)
-        if local_likelihood.empty:
-            log_likelihood = local_likelihood
+        local_results = pd.DataFrame.from_dict(local_results, orient='index',columns= column_name)
+        local_results=local_results.dropna() 
+      
+        if local_results.empty:
+            results = local_results
         else: 
-            best_index = local_likelihood[local_likelihood.columns[col_name]].idxmax()
-            log_likelihood = local_likelihood.loc[local_likelihood[local_likelihood.columns[col_name]].idxmax()]
-        print('best')
-        #print(best_index)
-        print(log_likelihood)
-        return log_likelihood,best_index
+            best_index = local_results[local_results.columns[col_name]].idxmax()
+            results = local_results.loc[local_results[local_results.columns[col_name]].idxmax()]
+       
+        return results,best_index
     
     # Save and get log likelihood of successed fit and set likelihood to Nan in case of failure 
     def fit_model(self,reset = False):
-         
-        successed_fit = self.fit_GP(reset)
-        if successed_fit:
-            # in case of sparse inference or non-Gaussian likelihood attache the data to the model
+        start = time.time() # start time to fit a model  
+        fit = self.fit_GP(reset)
+        if fit: # save the model in case of successeded fit
             if self.sparse and self.lik_name is not 'Gaussian': 
                 log_likelihood = self.model.log_posterior_density((self.X,self.y)).numpy()
             else:
                 log_likelihood = self.model.log_posterior_density().numpy()
-                # save the model after optimizing best length scale from grid search or in case of single length scale
             if self.optimize_ls:
                 filename = self.get_file_name()
                 ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
@@ -299,14 +359,17 @@ class Fit_GPcounts(object):
         else: # set log likelihood to Nan in case of Cholesky decomposition or optimization failure
             log_likelihood = np.nan  
             self.model = np.nan
-           
-        return log_likelihood
+            
+        end = time.time() # end time to fit a model 
+        Time = end - start
+        Time = str(datetime.timedelta(seconds=end - start))     
+        return log_likelihood,Time
     
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1 of local optima      
     def fit_GP(self,reset = False):
         
         self.init_hyper_parameters(reset) 
-        print(self.hyper_parameters)
+        #print(self.hyper_parameters)
         fit = True   
         try:
             fit = self.fit_GP_with_likelihood()
@@ -316,14 +379,24 @@ class Fit_GPcounts(object):
             
             if self.count_fix < 10 and self.optimize_ls: # fix failure by random restart 
                 #print('Fit Cholesky decomposition was not successful.')
-                self.count_fix = self.count_fix +1 
                 fit = self.fit_GP(True)
                 
             else:
                 print('Can not fit a Gaussian process, Cholesky decomposition was not successful.')
                 fit = False
                 
-        if fit and self.optimize: #check case1 if no numerical issues and not loading
+         # Check for positive log likelihood if no numerical issues
+        if fit and self.count_fix < 5: # limit number of trial to fix bad solution 
+            # in case of sparse inference or non-Gaussian likelihood attache the data to the model
+            if self.sparse and self.lik_name is not 'Gaussian': 
+                log_likelihood = self.model.log_posterior_density((self.X,self.y)).numpy()
+            else:
+                log_likelihood = self.model.log_posterior_density().numpy()
+                
+            if log_likelihood > 0.0:
+                fit = self.fit_GP(True)
+                
+        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls: 
             self.test_local_optima_case1()
         return fit
     
@@ -353,9 +426,7 @@ class Fit_GPcounts(object):
 
         if self.lik_name == 'Negative_binomial':
             likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'])
-            #if self.hyper_parameters['ls'] == 1000:
-            #    set_trainable(likelihood.alpha,False) 
-
+       
         if self.lik_name == 'Zero_inflated_negative_binomial':
             alpha = self.hyper_parameters['alpha']
             km = self.hyper_parameters['km']
@@ -368,6 +439,8 @@ class Fit_GPcounts(object):
             
             if self.sparse:
                 self.model =  gpflow.models.SGPR((self.X,self.y), kernel=kernel,inducing_variable=self.Z)
+                if self.model_index == 2 and self.models_number == 2:
+                    set_trainable(self.model.inducing_variable.Z,False)
             else:
                 self.model = gpflow.models.GPR((self.X,self.y), kernel)
                 
@@ -377,11 +450,13 @@ class Fit_GPcounts(object):
             if self.sparse:
                 self.model = gpflow.models.SVGP( kernel ,likelihood,self.Z) 
                 training_loss = self.model.training_loss_closure((self.X, self.y.astype(float)))
+                if self.model_index == 2 and self.models_number == 2:
+                    set_trainable(self.model.inducing_variable.Z,False)
                 
             else:
                 self.model = gpflow.models.VGP((self.X, self.y) , kernel , likelihood) 
                 training_loss = self.model.training_loss
-                
+              
         if self.optimize:
             o = gpflow.optimizers.Scipy()
             res = o.minimize(training_loss, variables=self.model.trainable_variables,options=dict(maxiter=5000))
@@ -389,7 +464,7 @@ class Fit_GPcounts(object):
             if not(res.success): # test if optimization fail
                 if self.count_fix < 10 and self.optimize_ls: # fix failure by random restart 
                     #print('Optimization fail.')     
-                    self.count_fix = self.count_fix +1 
+                    
                     fit = self.fit_GP(True)
 
                 else:
@@ -434,15 +509,16 @@ class Fit_GPcounts(object):
         
         # in case of failure change the seed and sample hyper-parameters from uniform distributions
         if reset:
+            self.count_fix = self.count_fix +1 
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(30*(np.max(self.X)-np.min(self.X)))/100)
+            self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(50*(np.max(self.X)-np.min(self.X)))/100)
             self.hyper_parameters['var'] = np.random.uniform(0 ,100.)
             self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
             self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
 
-        else:   
-            self.seed_value = 0
+        else:
+            self.seed_value = self.global_seed
             self.count_fix = 0 
             np.random.seed(self.seed_value)
         
@@ -450,7 +526,13 @@ class Fit_GPcounts(object):
             self.hyper_parameters['var'] = 3.
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
-
+        '''
+        #print('seed')
+        #print(self.seed_value)
+        self.hyper_parameters['var'] = np.random.uniform(0 ,7.)
+        self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
+        self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
+        '''
         # set ls to 1000 in case of one sample test when fit the constant model    
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000.      
@@ -476,57 +558,7 @@ class Fit_GPcounts(object):
         self.var = None 
         self.mean = None   
         self.xp = -1000. # Put branching time much earlier than zero time
-       
-    def test_local_optima_case1(self):
-                 
-        if self.count_fix < 5 and self.optimize_ls: # limit number of trial to fix bad solution 
-            if self.sparse:
-                x = self.Z
-            else:
-                x = self.X 
-                
-            xtest = np.linspace(np.min(x),np.max(x),100)[:,None]
-            if self.lik_name == 'Gaussian':
-                mean, var = self.model.predict_y(xtest)
-                self.mean = mean.numpy()
-                self.var = var.numpy()
-            else:
-                # mean of posterior predictive samples
-                self.mean,self.var = self.samples_posterior_predictive_distribution(xtest)        
-                
-            y_mean = np.mean(self.y)
-            mean_mean = np.mean(self.mean) 
-            #print('y_mean',y_mean)
-            #print('mean_mean',mean_mean)
-            y_max = np.max(self.y)
-            mean_max = np.max(self.mean)
-            #print('y_max',y_max)
-            #print('mean_max',mean_max)
-            y_min = np.abs(np.min(self.y))
-            mean_min = np.abs(np.min(self.mean))
-            #print('y_min',y_min)
-            #print('mean_min',mean_min)
-            #print('abs(round((mean_mean-y_mean)/y_mean))',round((mean_mean-y_mean)/y_mean))
-                
-            if self.N < 100:
-                diff = 0
-            else:
-                diff = 1
-                
-            if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
-                if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
-                    '''
-                    print('local Optima')
-                    print(self.model_index)
-                    print('y_mean',y_mean)
-                    print('mean_mean',mean_mean)
-                    print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
-                    '''
-                    #self.fail.append(self.genes_name[self.index])
-                    #self.plot(xtest)
-                    self.count_fix = self.count_fix +1  
-                    fit = self.fit_GP(True)
-    
+
     def generate_Samples_from_distribution(self,mean):
         
         y = []
@@ -578,7 +610,7 @@ class Fit_GPcounts(object):
         genes_vars = []
         self.Y = self.Y_copy
         self.lik_name = lik_name
-        
+        self.global_seed = 0
         if test == 'One_sample_test':
             self.models_number = 2
         elif test == 'Two_samples_test':
@@ -646,6 +678,72 @@ class Fit_GPcounts(object):
         params['models']= genes_models
 
         return params
+    
+    # Function to Detection Outlier on one-dimentional datasets.
+    def find_anomalies(self,data):
+        anomalies_index = []
+        # Set upper and lower limit to 3 standard deviation
+        data_std = np.std(data)
+        data_mean = np.mean(data)
+        anomaly_cut_off = data_std * 3
+
+        lower_limit  = data_mean - anomaly_cut_off 
+        upper_limit = data_mean + anomaly_cut_off
+        #print(lower_limit)
+        #print(upper_limit)
+        
+        # Generate outliers
+        for outlier in range(data.shape[0]):
+            if data[outlier] > upper_limit or data[outlier] < lower_limit:
+                anomalies_index.append(outlier)
+        return anomalies_index
+    
+    def test_local_optima_case1(self):
+        
+     # limit number of trial to fix bad solution 
+        if self.sparse:
+            x = self.Z
+        else:
+            x = self.X 
+
+        xtest = np.linspace(np.min(x),np.max(x),100)[:,None]
+        if self.lik_name == 'Gaussian':
+            mean, var = self.model.predict_y(xtest)
+            self.mean = mean.numpy()
+            self.var = var.numpy()
+        else:
+            # mean of posterior predictive samples
+            self.mean,self.var = self.samples_posterior_predictive_distribution(xtest)        
+
+        y_mean = np.mean(self.y)
+        mean_mean = np.mean(self.mean) 
+        #print('y_mean',y_mean)
+        #print('mean_mean',mean_mean)
+        y_max = np.max(self.y)
+        mean_max = np.max(self.mean)
+        #print('y_max',y_max)
+        #print('mean_max',mean_max)
+        y_min = np.abs(np.min(self.y))
+        mean_min = np.abs(np.min(self.mean))
+        #print('y_min',y_min)
+        #print('mean_min',mean_min)
+        #print('abs(round((mean_mean-y_mean)/y_mean))',round((mean_mean-y_mean)/y_mean))
+
+        if self.N < 100:
+            diff = 0
+        else:
+            diff = 1
+
+        if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
+            if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
+
+                #print('local Optima')
+                #print(self.model_index)
+                #print('y_mean',y_mean)
+                #print('mean_mean',mean_mean)
+                #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
+                fit = self.fit_GP(True)
+
 '''
     def plot(self,xtest):
         plt.tick_params(labelsize='large', width=2)     
@@ -691,8 +789,8 @@ class Fit_GPcounts(object):
 
         if not(self.models_number == 3 and self.model_index == 2):
             plt.show()
-'''         
 
-
+   
+'''
 
 
