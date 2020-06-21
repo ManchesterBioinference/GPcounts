@@ -40,12 +40,11 @@ jupyter notebook
 
 | File <br> name | Description | 
 | --- | --- | 
-| RBFKernel | Example of GPcounts with RBF kernel and negative binomial likelihood on synthetic data. |
+| GPcounts | Example of GPcounts with negative binomial likelihood and compare it with Gaussian likelihood to find differentially expressed genes using infer trajecotry, one sample and two samples cases on on fission yeast dataset normalised using DESeq2.|
 | SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
 | AnscombeTransformation | Transform count data using Anscombe Transformation. |
 | OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
 | Branchingkernel | Application of GPcounts with branching kernel on Paul dataset. |
-| TwoSamplesTest | Application of GPcounts running two samples test on fission yeast dataset normalised using DESeq2. |
 | DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression. |
 | GPcountsZINB |Compare GPcounts fit with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on ScRNA-seq data using full and sparse GP.|
 | CompareDESeq |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
