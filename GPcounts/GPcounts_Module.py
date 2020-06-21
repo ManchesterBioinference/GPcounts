@@ -43,7 +43,7 @@ class Fit_GPcounts(object):
         # for the best value selected by grid search not optimize in case of grid search 
         
         self.transform = True # to use log(count+1) transformation
-        self.sparse = sparse # use sparse inference or full inference 
+        self.sparse = sparse # use sparse or full inference 
            
         self.X = None # time points == cell or samples 
         self.M = None # number of inducing point
@@ -450,7 +450,7 @@ class Fit_GPcounts(object):
                         
             if self.sparse:
                 self.model = gpflow.models.SVGP( kernel ,likelihood,self.Z) 
-                training_loss = self.model.training_loss_closure((self.X, self.y.astype(float)))
+                training_loss = self.model.training_loss_closure((self.X, self.y))
                 if self.model_index == 2 and self.models_number == 2:
                     set_trainable(self.model.inducing_variable.Z,False)
                 
@@ -690,9 +690,7 @@ class Fit_GPcounts(object):
 
         lower_limit  = data_mean - anomaly_cut_off 
         upper_limit = data_mean + anomaly_cut_off
-        #print(lower_limit)
-        #print(upper_limit)
-        
+       
         # Generate outliers
         for outlier in range(data.shape[0]):
             if data[outlier] > upper_limit or data[outlier] < lower_limit:
@@ -718,18 +716,11 @@ class Fit_GPcounts(object):
 
         y_mean = np.mean(self.y)
         mean_mean = np.mean(self.mean) 
-        #print('y_mean',y_mean)
-        #print('mean_mean',mean_mean)
         y_max = np.max(self.y)
         mean_max = np.max(self.mean)
-        #print('y_max',y_max)
-        #print('mean_max',mean_max)
         y_min = np.abs(np.min(self.y))
         mean_min = np.abs(np.min(self.mean))
-        #print('y_min',y_min)
-        #print('mean_min',mean_min)
-        #print('abs(round((mean_mean-y_mean)/y_mean))',round((mean_mean-y_mean)/y_mean))
-
+        
         if self.N < 100:
             diff = 0
         else:
@@ -737,61 +728,4 @@ class Fit_GPcounts(object):
 
         if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
             if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
-
-                #print('local Optima')
-                #print(self.model_index)
-                #print('y_mean',y_mean)
-                #print('mean_mean',mean_mean)
-                #print('abs(round((mean_mean-y_mean)/y_mean))',abs(round((mean_mean-y_mean)/y_mean)))
                 fit = self.fit_GP(True)
-
-'''
-    def plot(self,xtest):
-        plt.tick_params(labelsize='large', width=2)     
-        #plt.ylabel('Gene Expression', fontsize=16)
-        #plt.xlabel('Times', fontsize=16)
-        c = 'royalblue'
-
-        if self.model_index == 3:
-            c = 'green'
-
-        plt.plot(xtest, self.mean,color= c, lw=2) 
-
-        if self.lik_name == 'Gaussian':
-            plt.fill_between(xtest[:,0],
-                                self.mean[:,0] - 1*np.sqrt(self.var[:,0]),
-                                self.mean[:,0] + 1*np.sqrt(self.var[:,0]),color=c,alpha=0.2) # one standard deviation
-            plt.fill_between(xtest[:,0],
-                                self.mean[:,0] - 2*np.sqrt(self.var[:,0]),
-                                self.mean[:,0] + 2*np.sqrt(self.var[:,0]),color=c, alpha=0.1)# two standard deviation
-        else:
-
-            lowess = sm.nonparametric.lowess    
-            # one standard deviation 68%
-            percentile_16 = lowess(np.percentile(self.var, 16, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
-            percentile_16 = [(i > 0) * i for i in percentile_16]
-            percentile_84 = lowess(np.percentile(self.var, 84, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
-            percentile_84 = [(i > 0) * i for i in percentile_84]
-            plt.fill_between(xtest[:,0],percentile_16,percentile_84,color=c,alpha=0.2)
-
-            # two standard deviation 95%
-            percentile_5 = lowess(np.percentile(self.var, 5, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
-            percentile_5 = [(i > 0) * i for i in percentile_5]
-            percentile_95 = lowess(np.percentile(self.var,95, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
-            percentile_95 = [(i > 0) * i for i in percentile_95]
-            plt.fill_between(xtest[:,0],percentile_5,percentile_95,color=c,alpha=0.1)
-
-        if self.models_number == 3 and self.model_index == 1:
-            plt.scatter(self.model.data[0][0:int(self.model.data[0].shape[0]/2)],model.data[1][0:int(model.data[0].shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data    
-            plt.scatter(model.data[0][int(model.data[0].shape[0]/2)::],model.data[1][int(model.data[0].shape[0]/2)::], s=30, marker='o', color= 'green',alpha=1.) #data
-
-        else: 
-            plt.scatter(self.model.data[0],self.model.data[1],s=30,marker = 'o',color=c,alpha=1.)
-
-        if not(self.models_number == 3 and self.model_index == 2):
-            plt.show()
-
-   
-'''
-
-
