@@ -1,5 +1,6 @@
 # GPcounts
-GPcounts is Gaussain process regression package for count data with negative binomial and zero-inflated negative binomial likelihoods described in the paper "Gaussian process modelling of count data with application to bulk and single-cell RNA-Seq".
+GPcounts is Gaussain process regression package for count data with negative binomial and zero-inflated negative binomial likelihoods described in the paper "Gaussian process modelling of temporal and
+spatial counts data from RNA-seq experiments".
 
 ## Installation:
 1. Create and active virtual environment:
@@ -40,10 +41,14 @@ jupyter notebook
 | File <br> name | Description | 
 | --- | --- | 
 | RBFKernel | Example of GPcounts with RBF kernel and negative binomial likelihood on synthetic data. |
-| Branchingkernel | Application of GPcounts with branching kernel on Paul dataset. |
-| TwoSamplesTest | Application of GPcounts running two samples test on fission data normalised using DESeq2. |
-| GPcountsZINB |Compare GPcounts fit with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on ScRNA-seq data. |
-| CountData | Count data for highly expressed genes in Islet  𝛼  cells.|
 | SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
-| OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets.|
-| ROCcurves | ROC and presision recall curves.|
+| AnscombeTransformation | Transform count data using Anscombe Transformation. |
+| OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
+| Branchingkernel | Application of GPcounts with branching kernel on Paul dataset. |
+| TwoSamplesTest | Application of GPcounts running two samples test on fission yeast dataset normalised using DESeq2. |
+| DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression. |
+| GPcountsZINB |Compare GPcounts fit with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on ScRNA-seq data using full and sparse GP.|
+| CompareDESeq |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
+
+
+
