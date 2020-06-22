@@ -3,26 +3,14 @@ GPcounts is Gaussain process regression package for count data with negative bin
 spatial counts data from RNA-seq experiments".
 
 ## Installation:
-1. Create and active virtual environment:
 
-```
-conda create -n myenv python=3.7 
-conda activate myenv
-```
-
-2. Install R kernel and required packages to normalise [fission dataset](https://bioconductor.org/packages/release/data/experiment/html/fission.html) using [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html): (Optional)
-```
-conda install -c r r-irkernel
-
-conda install -c bioconda bioconductor-fission
-
-conda install -c bioconda bioconductor-deseq2
-```
-3. Clone GPcounts repository:
+1. Clone GPcounts repository:
 ```
 git clone git@github.com:ManchesterBioinference/GPcounts.git
 ```
-4. Install:
+GPcounts requires TensorFlow 2.1.0, GPflow 2.0.0 and Python 3.7.
+
+2. Install:
   * Install [GPflow](https://github.com/GPflow/GPflow)
   * Install requirements and package
 ```
@@ -40,14 +28,14 @@ jupyter notebook
 
 | File <br> name | Description | 
 | --- | --- | 
-| GPcounts | Example of GPcounts with negative binomial likelihood and compare it with Gaussian likelihood to find differentially expressed genes using infer trajecotry, one sample and two samples cases on on fission yeast dataset normalised using DESeq2.|
+| GPcounts | Example of GPcounts with negative binomial likelihood and compare it with Gaussian likelihood to find differentially expressed genes using infer trajecotry, one sample and two samples cases on on fission yeast dataset.|
 | SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
 | AnscombeTransformation | Transform count data using Anscombe Transformation. |
 | OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
 | Branchingkernel | Application of GPcounts with branching kernel on Paul dataset. |
 | DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression. |
 | GPcountsZINB |Compare GPcounts fit with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on ScRNA-seq data using full and sparse GP.|
-| CompareDESeq |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
+| PrecisionRecallSpearmanCorrelation |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
 
 
 
