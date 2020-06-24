@@ -1,6 +1,8 @@
 # GPcounts
-GPcounts is Gaussain process regression package for count data with negative binomial and zero-inflated negative binomial likelihoods described in the paper "Gaussian process modelling of temporal and
-spatial counts data from RNA-seq experiments".
+GPcounts is Gaussian process regression package for counts data with negative binomial 
+and zero-inflated negative binomial likelihoods described in the paper "Non-parametric 
+modelling of temporal and spatial counts data from RNA-seq experiments". It is implemented
+using the GPflow library. 
 
 ## Installation:
 
@@ -28,7 +30,10 @@ jupyter notebook
 
 | File <br> name | Description | 
 | --- | --- | 
-| GPcounts | Example of GPcounts with negative binomial likelihood and compare it with Gaussian likelihood to find differentially expressed genes using infer trajecotry, one sample and two samples cases on on fission yeast dataset.|
+| GPcounts | Example use of GPcounts with negative binomial likelihood on bulk
+RNA-Seq time course data. Comparison with 
+with Gaussian likelihood with examples of inferring trajectories and carrying out one 
+sample and two samples tests on on fission yeast dataset.|
 | SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
 | AnscombeTransformation | Transform count data using Anscombe Transformation. |
 | OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
