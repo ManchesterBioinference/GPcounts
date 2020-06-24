@@ -174,8 +174,8 @@ class Fit_GPcounts(object):
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
-        genes_results['P value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
-        genes_results['Q value']= qvalue(genes_results['p value'])
+        genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+        genes_results['q value']= qvalue(genes_results['p value'])
         
         return genes_results
         
