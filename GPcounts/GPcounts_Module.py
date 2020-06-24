@@ -14,6 +14,8 @@ from scipy.signal import savgol_filter
 import random
 import time
 import datetime
+from .utilities import qvalue
+
 #from matplotlib import pyplot as plt
 #import statsmodels.api as sm
 
@@ -27,7 +29,7 @@ tf.compat.v1.Session.inter_op_parallelism_threads = NUMCORES
 
 class Fit_GPcounts(object):
     
-    def __init__(self,X = None,Y= None,sparse = False, grid_search = False, gs = []):
+    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False, grid_search = False, gs = []):
      
         self.gs = gs # initialize Grid search with length scale values 
         self.gs_item = None # items in grid
@@ -44,7 +46,7 @@ class Fit_GPcounts(object):
         
         self.transform = True # to use log(count+1) transformation
         self.sparse = sparse # use sparse or full inference 
-           
+        self.scaled = scaled 
         self.X = None # time points == cell or samples 
         self.M = None # number of inducing point
         self.Z = None # inducing points
@@ -52,6 +54,7 @@ class Fit_GPcounts(object):
         self.Y_copy = None #copy of gene expression matrix
         self.D =  None # number of genes
         self.N = None # number of cells
+        self.scale = scale
         self.genes_name = None
         self.cells_name = None  
         
@@ -93,9 +96,10 @@ class Fit_GPcounts(object):
         
         if X.shape[0] == Y.shape[1]:
             self.X = X
-            self.cells_name = self.X.index.values 
-            self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
-            self.X = self.X.reshape([-1,1])
+            self.cells_name = self.X.index.values
+            self.X = X.values.astype(float) 
+            # self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
+            self.X = self.X.reshape([-1,self.X.shape[1]])
             
             if self.sparse:
                 self.M = int((5*(len(self.X)))/100) # number of inducing points is 5% of length of time points 
@@ -140,10 +144,11 @@ class Fit_GPcounts(object):
            '''
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,1,genes_index)
+
         
         return genes_results
         
-    def One_sample_test(self,lik_name= 'Negative_binomial',transform = True):
+    def One_sample_test(self,lik_name= 'Negative_binomial', transform = True):
         '''
         for i in range(3):
             self.transform = transform
@@ -169,6 +174,8 @@ class Fit_GPcounts(object):
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
+        genes_results['P value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+        genes_results['Q value']= qvalue(genes_results['p value'])
         
         return genes_results
         
@@ -222,7 +229,7 @@ class Fit_GPcounts(object):
         if self.models_number == 1:
             column_name = ['Dynamic_model_log_likelihood','Dynamic_time']
         elif self.models_number == 2:
-            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio','Dynamic_time','Constant_time']
+            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio', 'Dynamic_time','Constant_time']
         else:
             column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio','Shared_model_time','model_1_time','model_2_time'] 
         
@@ -230,7 +237,15 @@ class Fit_GPcounts(object):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
-             
+            global Scale
+            if self.scaled:
+                scale=pd.DataFrame(self.scale)
+                Scale = self.scale.iloc[:,self.index]
+                Scale=np.array(Scale)
+                Scale=np.transpose([Scale] * 20) 
+
+            else:
+                Scale = np.ones((self.X.shape[0], 20))
             if len(self.gs) > 1: #grid search 
                 self.optimize_ls = False      
                 log_likelihood, best_index = self.fit_single_gene(self.gs,column_name)
@@ -280,6 +295,7 @@ class Fit_GPcounts(object):
 
                         #test local optima case 2 
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
+
                         if self.optimize_ls:
                             if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                                 self.model_index = 1
@@ -568,7 +584,12 @@ class Fit_GPcounts(object):
                 y.append(ss.poisson.rvs(mean[i], size = 500))
 
         if self.lik_name == 'Negative_binomial':
-            r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
+            if self.model.likelihood.alpha.numpy() == 0:
+                for i in range(mean.shape[0]):
+                 y.append(ss.poisson.rvs(mean[i], size = 500))
+                
+            else:
+                r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
             prob = r / (mean+ r)   # p probability of success
             for i in range(mean.shape[0]):
                 y.append(ss.nbinom.rvs(r, prob[i], size = 500))
@@ -705,7 +726,9 @@ class Fit_GPcounts(object):
         else:
             x = self.X 
 
-        xtest = np.linspace(np.min(x),np.max(x),100)[:,None]
+        if self.X.shape[1] == 1:   
+                xtest = np.linspace(np.min(x),np.max(x),100)[:,None]
+        else: xtest = self.X
         if self.lik_name == 'Gaussian':
             mean, var = self.model.predict_y(xtest)
             self.mean = mean.numpy()

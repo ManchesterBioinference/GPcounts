@@ -4,6 +4,7 @@ from gpflow.likelihoods import ScalarLikelihood
 from gpflow.base import Parameter
 from gpflow.config import default_float
 from gpflow.utilities import positive
+from GPcounts import GPcounts_Module
 
 class NegativeBinomial(ScalarLikelihood):
     def __init__(self, alpha= 1.0,invlink=tf.exp, **kwargs):
@@ -25,13 +26,13 @@ class NegativeBinomial(ScalarLikelihood):
         
         '''
         
-        return negative_binomial(self.invlink(F) , Y, self.alpha)
+        return negative_binomial(self.invlink(F)*GPcounts_Module.Scale , Y, self.alpha)
     
     def _conditional_mean(self, F):
-        return self.invlink(F)
+        return self.invlink(F)*GPcounts_Module.Scale
       
     def _conditional_variance(self, F):
-        m = self.invlink(F)
+        m = self.invlink(F)*GPcounts_Module.Scale
         return m + m**2 * self.alpha
 
 def negative_binomial(m, Y, alpha):
