@@ -30,7 +30,7 @@ jupyter notebook
 
 | File <br> name | Description | 
 | --- | --- | 
-| GPcounts | Example use of GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. Comparison with with Gaussian likelihood with examples of inferring trajectories and carrying out one sample and two samples tests on on fission yeast dataset.|
+| GPcounts | Example use of GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. Comparison with Gaussian likelihood and examples of inferring trajectories and carrying out one sample and two samples tests on on fission yeast dataset.|
 | SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
 | AnscombeTransformation | Transform count data using Anscombe Transformation. |
 | OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
