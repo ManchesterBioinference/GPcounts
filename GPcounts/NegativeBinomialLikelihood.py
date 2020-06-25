@@ -14,7 +14,7 @@ class NegativeBinomial(ScalarLikelihood):
                                dtype=default_float())
         self.invlink = invlink
 
-    def _scalar_log_prob(self, F, Y):
+    def _scalar_log_prob(self, F, Y): 
         """
         P(Y) = Gamma(k + Y) / (Y! Gamma(k)) * (m / (m+k))^Y * (1 + m/k)^(-k)
         """
