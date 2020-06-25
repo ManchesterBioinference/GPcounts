@@ -21,7 +21,7 @@ pip install -r requirements.txt
 python setup.py install
 cd 
 ```
-# Notebooks to demonstrate GPcounts use and reproduce paper results: 
+# Notebooks to demonstrate GPcounts features: 
 Run the GPcounts/demo-notebooks
 ```
 cd GPcounts/demo-notebooks
@@ -29,8 +29,8 @@ jupyter notebook
 ```
 | File <br> name | Description | 
 | --- | --- | 
-| bulk_time_series | Example use of GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. Comparison with Gaussian likelihood and examples of inferring trajectories and carrying out one sample and two samples tests on on fission yeast dataset|
-| scRNA-Seq_time_series | Example use of GPcounts with zero-inflated negative binomial, negative binomial and Gaussian likelihoods using full inference on ScRNA-seq gene expression data to find differentially expressed genes using infer trajectory and compare it with GPcounts using sparse inferece to obtain to obtain computational efficiency |
+| bulk_time_series | Applying GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. We compare with Gaussian likelihoood results and show how to infer trajectories and carry out one-sample and two-samples tests|
+| scRNA-Seq_time_series | Applying GPcounts with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on scRNA-seq gene expression data to find DE genes. We also demonstrate the use of sparse inference to improve computational efficiency|
 
 # Notebooks to reproduce additional paper results: 
 Run the GPcounts/paper-notebooks
