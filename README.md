@@ -21,23 +21,30 @@ pip install -r requirements.txt
 python setup.py install
 cd 
 ```
-# List of notebooks
-To run the notebooks
+# Examples of GPcounts uses: 
+Run the GPcounts/demo-notebooks
 ```
-cd GPcounts/notebooks
+cd GPcounts/demo-notebooks
 jupyter notebook
 ```
-
 | File <br> name | Description | 
 | --- | --- | 
-| GPcounts | Example use of GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. Comparison with Gaussian likelihood and examples of inferring trajectories and carrying out one sample and two samples tests on on fission yeast dataset.|
-| SimulateSyntheticCounts | Simulate synthetic bulk RNA-seq timeseries|
-| AnscombeTransformation | Transform count data using Anscombe Transformation. |
-| OneSampleTest | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
-| Branchingkernel | Application of GPcounts with branching kernel on Paul dataset. |
-| DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression. |
-| GPcountsZINB |Compare GPcounts fit with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on ScRNA-seq data using full and sparse GP.|
-| PrecisionRecallSpearmanCorrelation |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
+| bulk_time_series | Example use of GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. Comparison with Gaussian likelihood and examples of inferring trajectories and carrying out one sample and two samples tests on on fission yeast dataset.|
+| scRNA-Seq_time_series | Example use of GPcounts with zero-inflated negative binomial, negative binomial and Gaussian likelihoods using full inference on ScRNA-seq gene expression data to find differentially expressed genes using infer trajectory and compare it with GPcounts using sparse inferece to obtain to obtain computational efficiency |
+
+# Reproduce paper results: 
+Run the GPcounts/paper-notebooks
+```
+cd GPcounts/paper-notebooks
+jupyter notebook
+```
+| File <br> name | Description | 
+| --- | --- | 
+| Simulate_synthetic_counts | Simulate synthetic bulk RNA-seq timeseries|
+| Anscombe_transformation | Transform count data using Anscombe Transformation. |
+| One_sample_test | Application of GPcounts running one sample test on simulated bulk RNA-seq datasets and show Roc curves.|
+| ScRNA_seq_DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression. |
+| Precision_recall_spearman_correlation |Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNAseq dataset.|
 
 
 
