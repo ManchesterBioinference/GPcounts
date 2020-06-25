@@ -15,6 +15,8 @@ import random
 import time
 import datetime
 from .utilities import qvalue
+import scipy as sp
+from scipy import interpolate
 
 #from matplotlib import pyplot as plt
 #import statsmodels.api as sm
@@ -120,91 +122,27 @@ class Fit_GPcounts(object):
         
     
     def Infer_trajectory(self,lik_name= 'Negative_binomial',transform = True): 
-        '''
-        for i in range(3):
-            self.transform = transform
-            if i == 0:
-                self.global_seed = 0
-                genes_index = range(self.D) # run test on all genes
-                
-            else:
-                self.global_seed= i*15 # shift seed to samples new values
-                
-            results = self.run_test(lik_name,1,genes_index) 
-            # in case of anomalies update them with new values
-            if i == 0:
-                    genes_results = results
-            else:
-                 genes_results.iloc[genes_index,:]= results.values
-                    
-            genes_index = self.find_anomalies(genes_results['Dynamic_model_log_likelihood'].values)
-            
-            if len(genes_index) == 0:
-                break
-           '''
+        
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,1,genes_index)
-
         
         return genes_results
         
     def One_sample_test(self,lik_name= 'Negative_binomial', transform = True):
-        '''
-        for i in range(3):
-            self.transform = transform
-            if i == 0:
-                self.global_seed = 0
-                genes_index = range(self.D) # run test on all genes
-                
-            else:
-                self.global_seed= i*15 # shift seed to samples new values
-                
-            results = self.run_test(lik_name,2,genes_index) 
-            # in case of anomalies update them with new values
-            if i == 0:
-                    genes_results = results
-            else:
-                 genes_results.iloc[genes_index,:]= results.values
-                    
-            genes_index = self.find_anomalies(genes_results['log_likelihood_ratio'].values)
-            
-            if len(genes_index) == 0:
-                break
-        '''
+        
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
-        genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
-        genes_results['q value']= qvalue(genes_results['p value'])
-        
+        if self.scale:
+            genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+            genes_results['q value']= self.qvalue(genes_results['p value'])
+
         return genes_results
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
-        '''
-        for i in range(3):
-            self.transform = transform
-            if i == 0:
-                self.global_seed = 0
-                genes_index = range(self.D) # run test on all genes
-                
-            else:
-                self.global_seed= i*15 # shift seed to samples new values
-                
-            results = self.run_test(lik_name,3,genes_index) 
-            # in case of anomalies update them with new values
-            if i == 0:
-                    genes_results = results
-            else:
-                 genes_results.iloc[genes_index,:]= results.values
-                    
-            genes_index = self.find_anomalies(genes_results['log_likelihood_ratio'].values)
-            
-            if len(genes_index) == 0:
-                break
-        '''
+        
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,3,genes_index)
-        genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
         
         return genes_results
     
@@ -227,11 +165,11 @@ class Fit_GPcounts(object):
         
         #column names for likelihood dataframe
         if self.models_number == 1:
-            column_name = ['Dynamic_model_log_likelihood','Dynamic_time']
+            column_name = ['Dynamic_model_log_likelihood']
         elif self.models_number == 2:
-            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio', 'Dynamic_time','Constant_time']
+            column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio']
         else:
-            column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio','Shared_model_time','model_1_time','model_2_time'] 
+            column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio'] 
         
         for self.index in tqdm(genes_index):
           
@@ -278,15 +216,15 @@ class Fit_GPcounts(object):
         for self.gs_item in gs:
             
             self.model_index = 1  
-            model_1_log_likelihood,model_1_time = self.fit_model()
-            results =  [model_1_log_likelihood,model_1_time]
+            model_1_log_likelihood = self.fit_model()
+            results =  [model_1_log_likelihood]
             
             if self.models_number == 2:
                 if not(np.isnan(model_1_log_likelihood)):
                     ls , km_1 = self.record_hyper_parameters()
             
                     self.model_index = 2
-                    model_2_log_likelihood,model_2_time = self.fit_model()
+                    model_2_log_likelihood= self.fit_model()
                     
                     if not(np.isnan(model_2_log_likelihood)):
 
@@ -300,13 +238,13 @@ class Fit_GPcounts(object):
                             if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                                 self.model_index = 1
                                 reset = True
-                                model_1_log_likelihood,model_1_time = self.fit_model(reset)
+                                model_1_log_likelihood = self.fit_model(reset)
 
                                 if not(np.isnan(model_1_log_likelihood)):
                                     ls , km_1 = self.record_hyper_parameters()
                                 self.model_index = 2
                                 reset = True
-                                model_2_log_likelihood,model_2_time = self.fit_model(reset)
+                                model_2_log_likelihood = self.fit_model(reset)
 
                                 ll_ratio = model_1_log_likelihood - model_2_log_likelihood
 
@@ -314,7 +252,7 @@ class Fit_GPcounts(object):
                     model_2_log_likelihood = np.nan
                     ll_ratio = np.nan
 
-                results =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio,model_1_time,model_1_time] 
+                results =  [model_1_log_likelihood,model_2_log_likelihood,ll_ratio] 
 
             if self.models_number == 3:
 
@@ -327,7 +265,7 @@ class Fit_GPcounts(object):
                 self.y = self.y.reshape([self.N,1])
 
                 self.model_index = 2
-                model_2_log_likelihood,model_2_time = self.fit_model() 
+                model_2_log_likelihood = self.fit_model() 
 
                 # initialize X and Y with second time series
                 self.set_X_Y(X_df[self.N : :],Y_df.iloc[:,int(self.N) : :])
@@ -335,7 +273,7 @@ class Fit_GPcounts(object):
                 self.y = self.y.reshape([self.N,1])
 
                 self.model_index = 3
-                model_3_log_likelihood,model_3_time = self.fit_model()
+                model_3_log_likelihood = self.fit_model()
 
                 self.set_X_Y(X_df,Y_df)
 
@@ -344,7 +282,7 @@ class Fit_GPcounts(object):
                 else:
                     ll_ratio = ((model_2_log_likelihood+model_3_log_likelihood)-model_1_log_likelihood)
 
-                results = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio,model_1_time,model_2_time,model_3_time]
+                results = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio]
   
             local_results[self.gs_item]=results
 
@@ -361,7 +299,7 @@ class Fit_GPcounts(object):
     
     # Save and get log likelihood of successed fit and set likelihood to Nan in case of failure 
     def fit_model(self,reset = False):
-        start = time.time() # start time to fit a model  
+        #start = time.time() # start time to fit a model  
         fit = self.fit_GP(reset)
         if fit: # save the model in case of successeded fit
             if self.sparse and self.lik_name is not 'Gaussian': 
@@ -377,10 +315,10 @@ class Fit_GPcounts(object):
             log_likelihood = np.nan  
             self.model = np.nan
             
-        end = time.time() # end time to fit a model 
-        Time = end - start
-        Time = str(datetime.timedelta(seconds=end - start))     
-        return log_likelihood,Time
+        #end = time.time() # end time to fit a model 
+        #Time = end - start
+        #Time = str(datetime.timedelta(seconds=end - start))     
+        return log_likelihood
     
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1 of local optima      
     def fit_GP(self,reset = False):
@@ -586,7 +524,7 @@ class Fit_GPcounts(object):
         if self.lik_name == 'Negative_binomial':
             if self.model.likelihood.alpha.numpy() == 0:
                 for i in range(mean.shape[0]):
-                 y.append(ss.poisson.rvs(mean[i], size = 500))
+                     y.append(ss.poisson.rvs(mean[i], size = 500))
                 
             else:
                 r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
@@ -752,3 +690,63 @@ class Fit_GPcounts(object):
         if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
             if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
                 fit = self.fit_GP(True)
+                
+
+
+
+    def qvalue(self,pv, pi0=None):
+        '''
+        Estimates q-values from p-values
+        This function is modified based on https://github.com/nfusi/qvalue
+        Args
+        ====
+        pi0: if None, it's estimated as suggested in Storey and Tibshirani, 2003.
+        '''
+        assert(pv.min() >= 0 and pv.max() <= 1), "p-values should be between 0 and 1"
+
+        original_shape = pv.shape
+        pv = pv.ravel()  # flattens the array in place, more efficient than flatten()
+
+        m = float(len(pv))
+
+        # if the number of hypotheses is small, just set pi0 to 1
+        if len(pv) < 100 and pi0 is None:
+            pi0 = 1.0
+        elif pi0 is not None:
+            pi0 = pi0
+        else:
+            # evaluate pi0 for different lambdas
+            pi0 = []
+            lam = sp.arange(0, 0.90, 0.01)
+            counts = sp.array([(pv > i).sum() for i in sp.arange(0, 0.9, 0.01)])
+            for l in range(len(lam)):
+                pi0.append(counts[l]/(m*(1-lam[l])))
+
+            pi0 = sp.array(pi0)
+
+            # fit natural cubic spline
+            tck = interpolate.splrep(lam, pi0, k=3)
+            pi0 = interpolate.splev(lam[-1], tck)
+
+            if pi0 > 1:
+                pi0 = 1.0
+
+        assert(pi0 >= 0 and pi0 <= 1), "pi0 is not between 0 and 1: %f" % pi0
+
+        p_ordered = sp.argsort(pv)
+        pv = pv[p_ordered]
+        qv = pi0 * m/len(pv) * pv
+        qv[-1] = min(qv[-1], 1.0)
+
+        for i in range(len(pv)-2, -1, -1):
+            qv[i] = min(pi0*m*pv[i]/(i+1.0), qv[i+1])
+
+        # reorder qvalues
+        qv_temp = qv.copy()
+        qv = sp.zeros_like(qv)
+        qv[p_ordered] = qv_temp
+
+        # reshape qvalues
+        qv = qv.reshape(original_shape)
+
+        return qv    
