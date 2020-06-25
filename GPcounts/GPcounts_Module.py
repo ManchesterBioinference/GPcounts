@@ -70,7 +70,7 @@ class Fit_GPcounts(object):
         self.var = None # GP variance of posterior predictive
         self.mean = None # GP mean of posterior predictive
         self.fix = False # fix hyper-parameters
-        
+        # self.Scale = None
         # save likelihood of hyper-parameters of dynamic model to initialize the constant model
         self.lik_alpha = None  
         self.lik_km = None
@@ -320,6 +320,9 @@ class Fit_GPcounts(object):
         #Time = str(datetime.timedelta(seconds=end - start))     
         return log_likelihood
     
+    # def get_Scale(self):
+
+    #     return self.Scale
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1 of local optima      
     def fit_GP(self,reset = False):
         
