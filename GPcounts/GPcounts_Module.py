@@ -31,7 +31,7 @@ tf.compat.v1.Session.inter_op_parallelism_threads = NUMCORES
 
 class Fit_GPcounts(object):
     
-    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False, grid_search = False, gs = []):
+    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False,nb_scaled=False, grid_search = False, gs = []):
      
         self.gs = gs # initialize Grid search with length scale values 
         self.gs_item = None # items in grid
@@ -49,6 +49,7 @@ class Fit_GPcounts(object):
         self.transform = True # to use log(count+1) transformation
         self.sparse = sparse # use sparse or full inference 
         self.scaled = scaled 
+        self.nb_scaled = nb_scaled
         self.X = None # time points == cell or samples 
         self.M = None # number of inducing point
         self.Z = None # inducing points
@@ -59,6 +60,7 @@ class Fit_GPcounts(object):
         self.scale = scale
         self.genes_name = None
         self.cells_name = None  
+        self.Scale = None
         
         # test information
         self.lik_name = None # the selected likelihood name 
@@ -175,15 +177,11 @@ class Fit_GPcounts(object):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
-            global Scale
-            if self.scaled:
-                scale=pd.DataFrame(self.scale)
-                Scale = self.scale.iloc[:,self.index]
-                Scale=np.array(Scale)
-                Scale=np.transpose([Scale] * 20) 
+            # global Scale
+             
 
-            else:
-                Scale = np.ones((self.X.shape[0], 20))
+            # else:
+                # self.Scale = np.ones((self.X.shape[0], 20))
             if len(self.gs) > 1: #grid search 
                 self.optimize_ls = False      
                 log_likelihood, best_index = self.fit_single_gene(self.gs,column_name)
@@ -383,7 +381,15 @@ class Fit_GPcounts(object):
             likelihood = gpflow.likelihoods.Poisson()
 
         if self.lik_name == 'Negative_binomial':
-            likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'])
+            if self.scaled:
+                scale=pd.DataFrame(self.scale)
+                self.Scale = self.scale.iloc[:,self.index]
+                self.Scale=np.array(self.Scale)
+                self.Scale=np.transpose([self.Scale] * 20)
+                likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'],scale=self.Scale,nb_scaled=self.nb_scaled)
+            else:
+                likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'],nb_scaled=self.nb_scaled)
+
        
         if self.lik_name == 'Zero_inflated_negative_binomial':
             alpha = self.hyper_parameters['alpha']

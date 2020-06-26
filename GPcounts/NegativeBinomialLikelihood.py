@@ -8,12 +8,14 @@ from gpflow.utilities import positive
 
 
 class NegativeBinomial(ScalarLikelihood):
-    def __init__(self, alpha= 1.0,invlink=tf.exp, **kwargs):
+    def __init__(self, alpha= 1.0,invlink=tf.exp,scale=1.0,nb_scaled=False, **kwargs):
         super().__init__( **kwargs)
         self.alpha = Parameter(alpha,
                                transform= positive(),
                                dtype=default_float())
+        self.scale = Parameter(scale,trainable=False,dtype=default_float())
         self.invlink = invlink
+        self.nb_scaled = nb_scaled
 
     def _scalar_log_prob(self, F, Y): 
         """
@@ -26,8 +28,10 @@ class NegativeBinomial(ScalarLikelihood):
         return tf.lgamma(k + Y) - tf.lgamma(Y + 1) - tf.lgamma(k) + Y * tf.log(m / (m + k)) - k * tf.log(1 + m * self.alpha) 
         
         '''
-        from GPcounts import GPcounts_Module
-        return negative_binomial(self.invlink(F)*GPcounts_Module.Scale , Y, self.alpha)
+        if self.nb_scaled == True:
+            return negative_binomial(self.invlink(F)*self.scale , Y, self.alpha)
+        else:  
+            return negative_binomial(self.invlink(F) , Y, self.alpha)
     
     def _conditional_mean(self, F):
         from GPcounts import GPcounts_Module
