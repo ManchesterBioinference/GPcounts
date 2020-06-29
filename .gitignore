@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+build
+.ipynb_checkpoints 
+_psychahe_

@@ -115,7 +115,12 @@ class Fit_GPcounts(object):
               
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
-            self.Y = self.Y.values # gene expression matrix
+            if self.lik_name == 'Gaussian':
+                self.Y = self.Y.values # gene expression matrix
+            else:
+                self.Y = self.Y.values.astype(int)
+                self.Y = self.Y.astype(float)
+                
             self.Y_copy = self.Y
             self.D = Y.shape[0] # number of genes
             self.N = Y.shape[1] # number of cells
@@ -217,11 +222,7 @@ class Fit_GPcounts(object):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
-            # global Scale
-             
-
-            # else:
-                # self.Scale = np.ones((self.X.shape[0], 20))
+            
             if len(self.gs) > 1: #grid search 
                 self.optimize_ls = False      
                 log_likelihood, best_index = self.fit_single_gene(self.gs,column_name)
@@ -481,6 +482,7 @@ class Fit_GPcounts(object):
         ls = self.model.kernel.lengthscales.numpy()
         km_1 = 0
         # copy likelihood parameters and use them to fit constant model
+        self.kern_var = self.model.kernel.variance.numpy()
         if self.lik_name == 'Negative_binomial':
             self.lik_alpha  = self.model.likelihood.alpha.numpy()
         if self.lik_name == 'Zero_inflated_negative_binomial':
@@ -488,7 +490,7 @@ class Fit_GPcounts(object):
             self.lik_alpha  = self.model.likelihood.alpha.numpy()
             
         return ls,km_1
-     
+    
     def get_file_name(self):
         dir_name = 'GPcounts_models/'
 
@@ -517,37 +519,36 @@ class Fit_GPcounts(object):
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
             self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(50*(np.max(self.X)-np.min(self.X)))/100)
-            self.hyper_parameters['var'] = np.random.uniform(0 ,100.)
-            self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
+            self.hyper_parameters['var'] = np.random.uniform(0 ,10.)
+            self.hyper_parameters['alpha'] = np.random.uniform(0., 5.)
             self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
 
         else:
             self.seed_value = self.global_seed
             self.count_fix = 0 
             np.random.seed(self.seed_value)
-        
+            # if len(self.gs) == 1: no grid search
+            self.gs = [10] 
+            self.gs_item = 10
             self.hyper_parameters['ls'] = (self.gs_item*(np.max(self.X)-np.min(self.X)))/100
             self.hyper_parameters['var'] = 3.
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
-        '''
-        #print('seed')
-        #print(self.seed_value)
-        self.hyper_parameters['var'] = np.random.uniform(0 ,7.)
-        self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
-        self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
-        '''
+       
         # set ls to 1000 in case of one sample test when fit the constant model    
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000.      
-            if self.optimize:
+            if self.optimize and self.count_fix == 0:
+                self.hyper_parameters['var'] = self.kern_var
                 if self.lik_name == 'Negative_binomial':
                     self.hyper_parameters['alpha'] = self.lik_alpha
+                    
        
         else:
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
+            self.kern_var = None
             self.fix = False # fix kernel hyper-parameters    
         
         # reset gpflow graph

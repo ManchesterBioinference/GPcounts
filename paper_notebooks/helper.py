@@ -3,27 +3,27 @@
 
 # In[ ]:
 
-import gpflow 
 from matplotlib import pyplot as plt
 import statsmodels.api as sm
 import numpy as np
 
 
-def plot(gp_counts,test,likelihood,X,Y,sparse = False):
+def plot(params,test,likelihood,X,Y,sparse = False):
+    
     indexes = Y.index.values # list of genes to be plotted 
     xtest = np.linspace(np.min(X)-.1,np.max(X)+.1,100)[:,None] # points to make prediction
-
-    params = gp_counts.load_models(indexes,test,xtest,likelihood)
     
     for i in range(len(indexes)):
         fig = plt.figure()
         print(indexes[i])
         model_index = 1
         y = Y.iloc[i].values # genes expression data
+        
         if likelihood == 'Gaussian':
                 y = np.log(y+1)
+        
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
-            gpflow.utilities.print_summary(model, fmt='notebook')
+            
             plt.tick_params(labelsize='large', width=2)     
             plt.ylabel('Gene Expression', fontsize=16)
             plt.xlabel('Times', fontsize=16)

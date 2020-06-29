@@ -34,12 +34,16 @@ class NegativeBinomial(ScalarLikelihood):
             return negative_binomial(self.invlink(F) , Y, self.alpha)
     
     def _conditional_mean(self, F):
-        from GPcounts import GPcounts_Module
-        return self.invlink(F)*GPcounts_Module.Scale
+        if self.nb_scaled == True:
+            return self.invlink(F)* self.scale
+        else:  
+            return self.invlink(F)
       
     def _conditional_variance(self, F):
-        from GPcounts import GPcounts_Module
-        m = self.invlink(F)*GPcounts_Module.Scale
+        if self.nb_scaled == True:
+            m = self.invlink(F) * self.scale
+        else:
+            m = self.invlink(F)
         return m + m**2 * self.alpha
 
 def negative_binomial(m, Y, alpha):
