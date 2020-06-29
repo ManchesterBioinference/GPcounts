@@ -31,6 +31,7 @@ jupyter notebook
 | --- | --- | 
 | bulk_time_series | Applying GPcounts with negative binomial likelihood on bulk RNA-Seq time course data. We compare with Gaussian likelihoood results and show how to infer trajectories and carry out one-sample and two-samples tests|
 | scRNA-Seq_time_series | Applying GPcounts with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on scRNA-seq gene expression data to find DE genes. We also demonstrate the use of sparse inference to improve computational efficiency|
+| GPcountsSpatial| Applying GPcounts with negative binomial likelihood to identify spatially expressed genes on spatial data from Mouse Olfactory Bulb. We demonstrate how to use the 'scaled' version which is based on data normalisation via multiplication of the NB mean by a location specific scale factor.  |
 
 # Notebooks to reproduce additional paper results: 
 Run the GPcounts/paper-notebooks
