@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import gpflow
-#from branchingKernel import BranchKernel
+from GPcounts import branchingKernel
 from GPcounts import NegativeBinomialLikelihood
 from sklearn.cluster import KMeans
 import scipy.stats as ss
@@ -147,17 +147,57 @@ class Fit_GPcounts(object):
         genes_results = self.run_test(lik_name,3,genes_index)
         
         return genes_results
-    
-    def Infer_trajectory_with_branching_kernel(self,cell_labels,bins_num = 50,lik_name= 'Negative_binomial',transform = False):
-         # note how to implement this    
+
+    def Infer_trajectory_with_branching_kernel(self, cell_labels, bins_num=20, lik_name='Negative_binomial',
+                                               branching_point=-1000):
+        # note how to implement this
         cell_labels = np.array(cell_labels)
-        self.X = np.c_[self.X,cell_labels[:,None]]
+        self.X = np.c_[self.X, cell_labels[:, None]]
         self.branching = True
-        results = self.run_test(lik_name,1)
-        return results
-     
+        self.xp = branching_point
+        # return self.X
+        genes_index = range(self.D)
+        log_likelihood = self.run_test(lik_name, 1, genes_index, branching=True)
+
+        self.branching_kernel_var = self.model.kernel.kern.variance.numpy()
+        self.branching_kernel_ls = self.model.kernel.kern.lengthscales.numpy()
+
+        # return log_likelihood
+        return self.infer_branch_location(lik_name, bins_num)
+
+    def infer_branch_location(self, lik_name, bin_nums):
+        testTimes = np.linspace(min(self.X[:, 0]), max(self.X[:, 0]), bin_nums, endpoint=True)
+        # print(testTimes)
+
+        ll = np.zeros(bin_nums)
+        models = list()
+        genes_index = range(self.D)
+        self.fix = True
+        X = self.X
+        for i in range(0, bin_nums):
+            del self.X
+            del self.model
+
+            self.xp = testTimes[i]
+            self.X = X.copy()
+            self.X[np.where(self.X[:, 0] <= testTimes[i]), 1] = 1
+            # print(np.unique(self.X[:, 1], return_counts=True))
+
+            log_likelihood = self.run_test(lik_name, 1, genes_index, branching=True)
+            ll[i] = self.model.log_posterior_density().numpy()
+            models.append(self.model)
+            # print(self.xp)
+        # del self.X
+        del self.model
+
+        # break
+        #         ll[i] = m_new.compute_log_likelihood()
+        # models.append(m_new)
+
+        return (models, ll)
+
     # Run the selected test and get likelihoods for all genes   
-    def run_test(self,lik_name,models_number,genes_index):
+    def run_test(self,lik_name,models_number,genes_index,branching = False):
         
         genes_results = {}
         self.Y = self.Y_copy
@@ -352,7 +392,7 @@ class Fit_GPcounts(object):
             if log_likelihood > 0.0:
                 fit = self.fit_GP(True)
                 
-        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls: 
+        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching:
             self.test_local_optima_case1()
         return fit
     
@@ -372,7 +412,7 @@ class Fit_GPcounts(object):
             if self.fix:
                 set_trainable(kern.lengthscales,False)
                 set_trainable(kern.variance,False)
-            kernel = BranchKernel(kern,self.xp)
+            kernel = branchingKernel.BranchKernel(kern,self.xp)
         else:
             kernel = kern
             
@@ -521,7 +561,7 @@ class Fit_GPcounts(object):
         self.model = None
         self.var = None 
         self.mean = None   
-        self.xp = -1000. # Put branching time much earlier than zero time
+        # self.xp = -1000. # Put branching time much earlier than zero time
 
     def generate_Samples_from_distribution(self,mean):
         
@@ -566,9 +606,12 @@ class Fit_GPcounts(object):
             var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
 
         var = np.vstack(var)
-        mean = np.mean(var,axis = 0)
-        mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
-        mean = [(i > 0) * i for i in mean]
+        if self.branching:
+            mean = np.mean(link_f, axis=0)
+        else:
+            mean = np.mean(var,axis = 0)
+            mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
+            mean = [(i > 0) * i for i in mean]
         return mean,var
   
     def load_models(self,genes,test,xtest,lik_name = 'Negative_binomial'):
