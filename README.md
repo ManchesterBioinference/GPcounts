@@ -19,6 +19,14 @@ pip install -r requirements.txt
 python setup.py install
 cd 
 ```
+In order to reproduce the paper results we have recorded the original packages used in a different requirements file
+```
+cd GPcounts
+pip install -r paper_requirements.txt
+python setup.py install
+cd 
+```
+
 # Notebooks to demonstrate GPcounts features: 
 Run the GPcounts/demo-notebooks
 ```
@@ -32,13 +40,7 @@ jupyter notebook
 | GPcountsSpatial| Applying GPcounts with negative binomial likelihood to identify spatially expressed genes on spatial data from Mouse Olfactory Bulb. We demonstrate how to use the 'scaled' version which is based on data normalisation via multiplication of the NB mean by a location specific scale factor.  |
 
 # Notebooks to reproduce additional paper results: 
-To install paper versions of GPflow and packages 
-```
-cd GPcounts
-pip install -r paper_requirements.txt
-python setup.py install
-cd 
-```
+
 Run the GPcounts/paper-notebooks
 ```
 cd GPcounts/paper-notebooks
