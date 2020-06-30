@@ -10,10 +10,8 @@ using the GPflow library.
 ```
 git clone git@github.com:ManchesterBioinference/GPcounts.git
 ```
-GPcounts requires TensorFlow 2.1.0, GPflow 2.0.0 and Python 3.7.
 
 2. Install:
-  * Install [GPflow](https://github.com/GPflow/GPflow)
   * Install requirements and package
 ```
 cd GPcounts
@@ -34,6 +32,13 @@ jupyter notebook
 | GPcountsSpatial| Applying GPcounts with negative binomial likelihood to identify spatially expressed genes on spatial data from Mouse Olfactory Bulb. We demonstrate how to use the 'scaled' version which is based on data normalisation via multiplication of the NB mean by a location specific scale factor.  |
 
 # Notebooks to reproduce additional paper results: 
+To install paper versions of GPflow and packages 
+```
+cd GPcounts
+pip install -r paper_requirements.txt
+python setup.py install
+cd 
+```
 Run the GPcounts/paper-notebooks
 ```
 cd GPcounts/paper-notebooks
@@ -42,9 +47,8 @@ jupyter notebook
 | File <br> name | Description | 
 | --- | --- | 
 | Simulate_synthetic_counts | Simulate synthetic bulk RNA-seq timeseries|
-| Anscombe_transformation | Transform count data using Anscombe's Transformation|
 | One_sample_test | One sample test on simulated bulk RNA-seq datasets and ROC curves to compare different likelihood functions|
-| ScRNA_seq_DESeq2 | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression data|
+| DESeq2_scRNA-seq | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression data|
 | Precision_recall_spearman_correlation | Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data|
 
 
