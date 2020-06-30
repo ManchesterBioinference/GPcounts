@@ -101,9 +101,10 @@ class Fit_GPcounts(object):
         if X.shape[0] == Y.shape[1]:
             self.X = X
             self.cells_name = self.X.index.values
-            self.X = X.values.astype(float) 
-            # self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
-            self.X = self.X.reshape([-1,self.X.shape[1]])
+            # self.X = X.values.astype(float)
+            self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
+            # self.X = self.X.reshape([-1,self.X.shape[1]])
+            self.X = self.X.reshape([-1, 1])
             
             if self.sparse:
                 self.M = int((5*(len(self.X)))/100) # number of inducing points is 5% of length of time points 
