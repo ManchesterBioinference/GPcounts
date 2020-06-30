@@ -101,10 +101,12 @@ class Fit_GPcounts(object):
         if X.shape[0] == Y.shape[1]:
             self.X = X
             self.cells_name = self.X.index.values
-            # self.X = X.values.astype(float)
-            self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
-            # self.X = self.X.reshape([-1,self.X.shape[1]])
-            self.X = self.X.reshape([-1, 1])
+            self.X = X.values.astype(float)
+            # self.X = np.asarray([float(x) for [x] in X.values.astype(float)]) # convert list of list to array of list
+            if len(self.X.shape) > 1:
+                self.X = self.X.reshape([-1,self.X.shape[1]])
+            else:
+                self.X = self.X.reshape([-1, 1])
             
             if self.sparse:
                 self.M = int((5*(len(self.X)))/100) # number of inducing points is 5% of length of time points 
@@ -154,7 +156,7 @@ class Fit_GPcounts(object):
         
         return genes_results
 
-    def Infer_trajectory_with_branching_kernel(self, cell_labels, bins_num=20, lik_name='Negative_binomial',
+    def Infer_branching_location(self, cell_labels, bins_num=50, lik_name='Negative_binomial',
                                                branching_point=-1000):
         # note how to implement this
         cell_labels = np.array(cell_labels)
@@ -169,38 +171,60 @@ class Fit_GPcounts(object):
         self.branching_kernel_ls = self.model.kernel.kern.lengthscales.numpy()
 
         # return log_likelihood
-        return self.infer_branch_location(lik_name, bins_num)
+        return self.infer_branching(lik_name, bins_num)
 
-    def infer_branch_location(self, lik_name, bin_nums):
-        testTimes = np.linspace(min(self.X[:, 0]), max(self.X[:, 0]), bin_nums, endpoint=True)
-        # print(testTimes)
-
-        ll = np.zeros(bin_nums)
+    def infer_branching(self, lik_name, bins_num):
+        testTimes = np.linspace(min(self.X[:, 0]), max(self.X[:, 0]), bins_num, endpoint=True)
+        ll = np.zeros(bins_num)
         models = list()
         genes_index = range(self.D)
         self.fix = True
         X = self.X
-        for i in range(0, bin_nums):
+        for i in range(0, bins_num):
             del self.X
             del self.model
 
             self.xp = testTimes[i]
             self.X = X.copy()
             self.X[np.where(self.X[:, 0] <= testTimes[i]), 1] = 1
-            # print(np.unique(self.X[:, 1], return_counts=True))
 
-            log_likelihood = self.run_test(lik_name, 1, genes_index, branching=True)
+            _ = self.run_test(lik_name, 1, genes_index, branching=True)
             ll[i] = self.model.log_posterior_density().numpy()
             models.append(self.model)
-            # print(self.xp)
-        # del self.X
         del self.model
 
-        # break
-        #         ll[i] = m_new.compute_log_likelihood()
-        # models.append(m_new)
+        # Find MAP model
+        log_ll = np.zeros(bins_num)
+        i = 0
+        for mm in models:
+            log_ll[i] = mm.log_posterior_density().numpy()
+            i = i + 1
 
-        return (models, ll)
+        tmp = -500. - max(log_ll)
+        for i in range(0, bins_num):
+            ll[i] = np.exp(log_ll[i] + tmp)
+        normalized_ll = ll / ll.sum(0)
+
+        iMAP = np.argmax(ll)
+        MAP_model = models[iMAP]
+        # Prediction
+        Xnew = np.linspace(min(self.X[:,0]), max(self.X[:,0]), 100).reshape(-1)[:, None]
+        x1 = np.c_[Xnew, np.ones(len(Xnew))[:, None]]
+        x2 = np.c_[Xnew, (np.ones(len(Xnew)) * 2)[:, None]]
+        Xtest = np.concatenate((x1, x2))
+        Xtest[np.where(Xtest[:, 0] <= MAP_model.kernel.xp), 1] = 1
+
+        mu, var = self.samples_posterior_predictive_distribution(Xtest)
+
+        del models
+        self.branching = False
+        return {'branching_probability':normalized_ll,
+                'branching_location':xp,
+                'mean': mu,
+                'variance':var,
+                'Xnew':Xnew,
+                'test_times':testTimes,
+                'MAP_model':MAP_model}
 
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
