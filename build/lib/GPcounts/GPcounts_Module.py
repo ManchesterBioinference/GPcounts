@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import gpflow
-#from branchingKernel import BranchKernel
+from GPcounts import branchingKernel
 from GPcounts import NegativeBinomialLikelihood
 from sklearn.cluster import KMeans
 import scipy.stats as ss
@@ -31,7 +31,7 @@ tf.compat.v1.Session.inter_op_parallelism_threads = NUMCORES
 
 class Fit_GPcounts(object):
     
-    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False, grid_search = False, gs = []):
+    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False,nb_scaled=False, grid_search = False, gs = []):
      
         self.gs = gs # initialize Grid search with length scale values 
         self.gs_item = None # items in grid
@@ -49,6 +49,7 @@ class Fit_GPcounts(object):
         self.transform = True # to use log(count+1) transformation
         self.sparse = sparse # use sparse or full inference 
         self.scaled = scaled 
+        self.nb_scaled = nb_scaled
         self.X = None # time points == cell or samples 
         self.M = None # number of inducing point
         self.Z = None # inducing points
@@ -59,6 +60,7 @@ class Fit_GPcounts(object):
         self.scale = scale
         self.genes_name = None
         self.cells_name = None  
+        self.Scale = None
         
         # test information
         self.lik_name = None # the selected likelihood name 
@@ -70,7 +72,7 @@ class Fit_GPcounts(object):
         self.var = None # GP variance of posterior predictive
         self.mean = None # GP mean of posterior predictive
         self.fix = False # fix hyper-parameters
-        
+        # self.Scale = None
         # save likelihood of hyper-parameters of dynamic model to initialize the constant model
         self.lik_alpha = None  
         self.lik_km = None
@@ -113,7 +115,12 @@ class Fit_GPcounts(object):
               
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
-            self.Y = self.Y.values # gene expression matrix
+            if self.lik_name == 'Gaussian':
+                self.Y = self.Y.values # gene expression matrix
+            else:
+                self.Y = self.Y.values.astype(int)
+                self.Y = self.Y.astype(float)
+                
             self.Y_copy = self.Y
             self.D = Y.shape[0] # number of genes
             self.N = Y.shape[1] # number of cells
@@ -133,7 +140,7 @@ class Fit_GPcounts(object):
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
-        if self.scale:
+        if self.scaled:
             genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
             genes_results['q value']= self.qvalue(genes_results['p value'])
 
@@ -145,17 +152,57 @@ class Fit_GPcounts(object):
         genes_results = self.run_test(lik_name,3,genes_index)
         
         return genes_results
-    
-    def Infer_trajectory_with_branching_kernel(self,cell_labels,bins_num = 50,lik_name= 'Negative_binomial',transform = False):
-         # note how to implement this    
+
+    def Infer_trajectory_with_branching_kernel(self, cell_labels, bins_num=20, lik_name='Negative_binomial',
+                                               branching_point=-1000):
+        # note how to implement this
         cell_labels = np.array(cell_labels)
-        self.X = np.c_[self.X,cell_labels[:,None]]
+        self.X = np.c_[self.X, cell_labels[:, None]]
         self.branching = True
-        results = self.run_test(lik_name,1)
-        return results
-     
+        self.xp = branching_point
+        # return self.X
+        genes_index = range(self.D)
+        log_likelihood = self.run_test(lik_name, 1, genes_index, branching=True)
+
+        self.branching_kernel_var = self.model.kernel.kern.variance.numpy()
+        self.branching_kernel_ls = self.model.kernel.kern.lengthscales.numpy()
+
+        # return log_likelihood
+        return self.infer_branch_location(lik_name, bins_num)
+
+    def infer_branch_location(self, lik_name, bin_nums):
+        testTimes = np.linspace(min(self.X[:, 0]), max(self.X[:, 0]), bin_nums, endpoint=True)
+        # print(testTimes)
+
+        ll = np.zeros(bin_nums)
+        models = list()
+        genes_index = range(self.D)
+        self.fix = True
+        X = self.X
+        for i in range(0, bin_nums):
+            del self.X
+            del self.model
+
+            self.xp = testTimes[i]
+            self.X = X.copy()
+            self.X[np.where(self.X[:, 0] <= testTimes[i]), 1] = 1
+            # print(np.unique(self.X[:, 1], return_counts=True))
+
+            log_likelihood = self.run_test(lik_name, 1, genes_index, branching=True)
+            ll[i] = self.model.log_posterior_density().numpy()
+            models.append(self.model)
+            # print(self.xp)
+        # del self.X
+        del self.model
+
+        # break
+        #         ll[i] = m_new.compute_log_likelihood()
+        # models.append(m_new)
+
+        return (models, ll)
+
     # Run the selected test and get likelihoods for all genes   
-    def run_test(self,lik_name,models_number,genes_index):
+    def run_test(self,lik_name,models_number,genes_index,branching = False):
         
         genes_results = {}
         self.Y = self.Y_copy
@@ -175,15 +222,7 @@ class Fit_GPcounts(object):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
-            global Scale
-            if self.scaled:
-                scale=pd.DataFrame(self.scale)
-                Scale = self.scale.iloc[:,self.index]
-                Scale=np.array(Scale)
-                Scale=np.transpose([Scale] * 20) 
-
-            else:
-                Scale = np.ones((self.X.shape[0], 20))
+            
             if len(self.gs) > 1: #grid search 
                 self.optimize_ls = False      
                 log_likelihood, best_index = self.fit_single_gene(self.gs,column_name)
@@ -320,6 +359,9 @@ class Fit_GPcounts(object):
         #Time = str(datetime.timedelta(seconds=end - start))     
         return log_likelihood
     
+    # def get_Scale(self):
+
+    #     return self.Scale
     # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1 of local optima      
     def fit_GP(self,reset = False):
         
@@ -351,7 +393,7 @@ class Fit_GPcounts(object):
             if log_likelihood > 0.0:
                 fit = self.fit_GP(True)
                 
-        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls: 
+        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching:
             self.test_local_optima_case1()
         return fit
     
@@ -371,7 +413,7 @@ class Fit_GPcounts(object):
             if self.fix:
                 set_trainable(kern.lengthscales,False)
                 set_trainable(kern.variance,False)
-            kernel = BranchKernel(kern,self.xp)
+            kernel = branchingKernel.BranchKernel(kern,self.xp)
         else:
             kernel = kern
             
@@ -380,7 +422,15 @@ class Fit_GPcounts(object):
             likelihood = gpflow.likelihoods.Poisson()
 
         if self.lik_name == 'Negative_binomial':
-            likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'])
+            if self.scaled:
+                scale=pd.DataFrame(self.scale)
+                self.Scale = self.scale.iloc[:,self.index]
+                self.Scale=np.array(self.Scale)
+                self.Scale=np.transpose([self.Scale] * 20)
+                likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'],scale=self.Scale,nb_scaled=self.nb_scaled)
+            else:
+                likelihood = NegativeBinomialLikelihood.NegativeBinomial(self.hyper_parameters['alpha'],nb_scaled=self.nb_scaled)
+
        
         if self.lik_name == 'Zero_inflated_negative_binomial':
             alpha = self.hyper_parameters['alpha']
@@ -432,6 +482,7 @@ class Fit_GPcounts(object):
         ls = self.model.kernel.lengthscales.numpy()
         km_1 = 0
         # copy likelihood parameters and use them to fit constant model
+        self.kern_var = self.model.kernel.variance.numpy()
         if self.lik_name == 'Negative_binomial':
             self.lik_alpha  = self.model.likelihood.alpha.numpy()
         if self.lik_name == 'Zero_inflated_negative_binomial':
@@ -439,7 +490,7 @@ class Fit_GPcounts(object):
             self.lik_alpha  = self.model.likelihood.alpha.numpy()
             
         return ls,km_1
-     
+    
     def get_file_name(self):
         dir_name = 'GPcounts_models/'
 
@@ -476,29 +527,28 @@ class Fit_GPcounts(object):
             self.seed_value = self.global_seed
             self.count_fix = 0 
             np.random.seed(self.seed_value)
-        
+            # if len(self.gs) == 1: no grid search
+            self.gs = [10] 
+            self.gs_item = 10
             self.hyper_parameters['ls'] = (self.gs_item*(np.max(self.X)-np.min(self.X)))/100
             self.hyper_parameters['var'] = 3.
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
-        '''
-        #print('seed')
-        #print(self.seed_value)
-        self.hyper_parameters['var'] = np.random.uniform(0 ,7.)
-        self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
-        self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
-        '''
+       
         # set ls to 1000 in case of one sample test when fit the constant model    
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000.      
-            if self.optimize:
+            if self.optimize and self.count_fix == 0:
+                #self.hyper_parameters['var'] = self.kern_var
                 if self.lik_name == 'Negative_binomial':
                     self.hyper_parameters['alpha'] = self.lik_alpha
+                    
        
         else:
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
+            #self.kern_var = None
             self.fix = False # fix kernel hyper-parameters    
         
         # reset gpflow graph
@@ -512,7 +562,7 @@ class Fit_GPcounts(object):
         self.model = None
         self.var = None 
         self.mean = None   
-        self.xp = -1000. # Put branching time much earlier than zero time
+        # self.xp = -1000. # Put branching time much earlier than zero time
 
     def generate_Samples_from_distribution(self,mean):
         
@@ -557,9 +607,12 @@ class Fit_GPcounts(object):
             var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
 
         var = np.vstack(var)
-        mean = np.mean(var,axis = 0)
-        mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
-        mean = [(i > 0) * i for i in mean]
+        if self.branching:
+            mean = np.mean(link_f, axis=0)
+        else:
+            mean = np.mean(var,axis = 0)
+            mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
+            mean = [(i > 0) * i for i in mean]
         return mean,var
   
     def load_models(self,genes,test,xtest,lik_name = 'Negative_binomial'):
