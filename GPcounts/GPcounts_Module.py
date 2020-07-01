@@ -206,25 +206,30 @@ class Fit_GPcounts(object):
         normalized_ll = ll / ll.sum(0)
 
         iMAP = np.argmax(ll)
-        MAP_model = models[iMAP]
+        # MAP_model = models[iMAP]
+        self.model = models[iMAP]
         # Prediction
         Xnew = np.linspace(min(self.X[:,0]), max(self.X[:,0]), 100).reshape(-1)[:, None]
         x1 = np.c_[Xnew, np.ones(len(Xnew))[:, None]]
         x2 = np.c_[Xnew, (np.ones(len(Xnew)) * 2)[:, None]]
         Xtest = np.concatenate((x1, x2))
-        Xtest[np.where(Xtest[:, 0] <= MAP_model.kernel.xp), 1] = 1
+        Xtest[np.where(Xtest[:, 0] <= self.model.kernel.xp), 1] = 1
 
-        mu, var = self.samples_posterior_predictive_distribution(Xtest)
+        if self.lik_name == 'Gaussian':
+            mu, var = self.model.predict_y(Xtest)
+        else:
+            mu, var = self.samples_posterior_predictive_distribution(Xtest)
 
         del models
         self.branching = False
         return {'branching_probability':normalized_ll,
-                'branching_location':xp,
+                'branching_location':self.model.kernel.xp,
                 'mean': mu,
                 'variance':var,
                 'Xnew':Xnew,
                 'test_times':testTimes,
-                'MAP_model':MAP_model}
+                'MAP_model':self.model,
+                'likelihood':self.lik_name}
 
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
@@ -768,9 +773,6 @@ class Fit_GPcounts(object):
         if y_mean > 0.0 and (mean_max > y_max or mean_min < y_min):
             if abs(round((mean_mean-y_mean)/y_mean)) > 0 or mean_mean == 0.0:
                 fit = self.fit_GP(True)
-                
-
-
 
     def qvalue(self,pv, pi0=None):
         '''
