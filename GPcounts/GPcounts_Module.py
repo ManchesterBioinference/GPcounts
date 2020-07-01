@@ -208,25 +208,59 @@ class Fit_GPcounts(object):
         normalized_ll = ll / ll.sum(0)
 
         iMAP = np.argmax(ll)
-        MAP_model = models[iMAP]
+        # MAP_model = models[iMAP]
+        self.model = models[iMAP]
         # Prediction
         Xnew = np.linspace(min(self.X[:,0]), max(self.X[:,0]), 100).reshape(-1)[:, None]
         x1 = np.c_[Xnew, np.ones(len(Xnew))[:, None]]
         x2 = np.c_[Xnew, (np.ones(len(Xnew)) * 2)[:, None]]
         Xtest = np.concatenate((x1, x2))
-        Xtest[np.where(Xtest[:, 0] <= MAP_model.kernel.xp), 1] = 1
+        Xtest[np.where(Xtest[:, 0] <= self.model.kernel.xp), 1] = 1
 
-        mu, var = self.samples_posterior_predictive_distribution(Xtest)
+        if self.lik_name == 'Gaussian':
+            mu, var = self.model.predict_y(Xtest)
+        else:
+            mu, var = self.samples_posterior_predictive_distribution(Xtest)
+
+        p = self.CalculateBranchingEvidence({'loglik':log_ll}, testTimes)
 
         del models
         self.branching = False
-        return {'branching_probability':normalized_ll,
-                'branching_location':xp,
+        return {'geneName':self.genes_name,
+                'branching_probability':normalized_ll,
+                'branching_location':self.model.kernel.xp,
                 'mean': mu,
                 'variance':var,
                 'Xnew':Xnew,
                 'test_times':testTimes,
-                'MAP_model':MAP_model}
+                'MAP_model':self.model,
+                'loglik':log_ll,
+                'logBayesFactor':p['logBayesFactor'],
+                'likelihood':self.lik_name}
+
+    def CalculateBranchingEvidence(self, d, Bsearch):
+        """
+        :param d: output dictionary from FitModel
+        :param Bsearch: candidate list of branching points
+        :return: posterior probability of branching at each point and log Bayes factor
+        of branching vs not branching
+        """
+        # Calculate probability of branching at each point
+        o = d['loglik'][:-1]
+        pn = np.exp(o - np.max(o))
+        p = pn / pn.sum()  # normalize
+
+        # Calculate log likelihood ratio by averaging out
+        o = d['loglik']
+        Nb = o.size - 1
+        if Nb != len(Bsearch) - 1:
+            raise NameError('Passed in wrong length of Bsearch is %g- should be %g' % (len(Bsearch), Nb))
+        obj = o[:-1]
+        illmax = np.argmax(obj)
+        llmax = obj[illmax]
+        lratiostable = llmax + np.log(1 + np.exp(obj[np.arange(obj.size) != illmax] - llmax).sum()) - o[-1] - np.log(Nb)
+
+        return {'posteriorBranching': p, 'logBayesFactor': lratiostable}
 
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
@@ -432,10 +466,17 @@ class Fit_GPcounts(object):
                            lengthscales = self.hyper_parameters['ls'])
             set_trainable(kern.lengthscales,self.optimize_ls)         
         
-        if self.branching: 
+        if self.branching:
+            del kern
             if self.fix:
+                # kern.lengthscales.assign(self.branching_kernel_ls)
+                # kern.variance.assign(self.branching_kernel_var)
+                kern = gpflow.kernels.RBF(variance=self.branching_kernel_var,
+                                          lengthscales=self.branching_kernel_ls)
                 set_trainable(kern.lengthscales,False)
                 set_trainable(kern.variance,False)
+            else:
+                kern = gpflow.kernels.RBF()
             kernel = branchingKernel.BranchKernel(kern,self.xp)
         else:
             kernel = kern
@@ -583,7 +624,8 @@ class Fit_GPcounts(object):
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
-            self.fix = False # fix kernel hyper-parameters    
+            if not self.branching:
+                self.fix = False # fix kernel hyper-parameters
         
         # reset gpflow graph
         tf.compat.v1.get_default_graph()
