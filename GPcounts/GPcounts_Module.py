@@ -300,8 +300,7 @@ class Fit_GPcounts(object):
                         #test local optima case 2 
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
                         
-                        if not(self.safe_mode):
-                        #if self.optimize_ls:
+                        if self.safe_mode and self.optimize_ls:
                             if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                                 self.model_index = 1
                                 reset = True
@@ -390,7 +389,7 @@ class Fit_GPcounts(object):
     def fit_GP(self,reset = False):
         
         self.init_hyper_parameters(reset) 
-        #print(self.hyper_parameters)
+        print(self.hyper_parameters)
         fit = True   
         try:
             fit = self.fit_GP_with_likelihood()
@@ -414,11 +413,10 @@ class Fit_GPcounts(object):
             else:
                 log_likelihood = self.model.log_posterior_density().numpy()
                 
-            if log_likelihood > 0.0:
-                fit = self.fit_GP(True)
+            #if log_likelihood > 0.0:
+            #    fit = self.fit_GP(True)
                 
-        #if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching:
-        if not(self.safe_mode):   
+        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching and self.safe_mode:   
             self.test_local_optima_case1()
         return fit
     
@@ -486,7 +484,8 @@ class Fit_GPcounts(object):
             else:
                 self.model = gpflow.models.VGP((self.X, self.y) , kernel , likelihood) 
                 training_loss = self.model.training_loss
-              
+        #print model before optimization 
+        gpflow.utilities.print_summary(self.model, fmt='notebook')      
         if self.optimize:
             o = gpflow.optimizers.Scipy()
             res = o.minimize(training_loss, variables=self.model.trainable_variables,options=dict(maxiter=5000))
@@ -537,17 +536,29 @@ class Fit_GPcounts(object):
     def init_hyper_parameters(self,reset = False):
        
         self.hyper_parameters = {}
-        
+        if not reset:
+            self.seed_value = self.global_seed
+            self.count_fix = 0 
+            np.random.seed(self.seed_value)
+            # if len(self.gs) == 1: no grid search
+        self.gs = [10] 
+        self.gs_item = 10
+        self.hyper_parameters['ls'] = (self.gs_item*(np.max(self.X)-np.min(self.X)))/100
+        self.hyper_parameters['var'] = 3.
+        self.hyper_parameters['alpha'] = 5.
+        self.hyper_parameters['km'] = 35.  
         # in case of failure change the seed and sample hyper-parameters from uniform distributions
         if reset:
             self.count_fix = self.count_fix +1 
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(50*(np.max(self.X)-np.min(self.X)))/100)
-            self.hyper_parameters['var'] = np.random.uniform(0 ,10.)
             self.hyper_parameters['alpha'] = np.random.uniform(0., 5.)
-            self.hyper_parameters['km'] = np.random.uniform(0., 100.)       
+            if self.count_fix > 1 or self.lik_name == 'Gaussian' or self.lik_name == 'Poisson':
+                self.hyper_parameters['ls'] = np.random.uniform((1*(np.max(self.X)-np.min(self.X)))/100 ,(50*(np.max(self.X)-np.min(self.X)))/100)
+                self.hyper_parameters['var'] = np.random.uniform(0 ,10.)
 
+                self.hyper_parameters['km'] = np.random.uniform(0., 100.) 
+        '''
         else:
             self.seed_value = self.global_seed
             self.count_fix = 0 
@@ -559,7 +570,7 @@ class Fit_GPcounts(object):
             self.hyper_parameters['var'] = 3.
             self.hyper_parameters['alpha'] = 5.
             self.hyper_parameters['km'] = 35.  
-       
+        '''
         # set ls to 1000 in case of one sample test when fit the constant model    
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000.      
@@ -733,7 +744,6 @@ class Fit_GPcounts(object):
         return anomalies_index
     
     def test_local_optima_case1(self):
-        print('test')
         # limit number of trial to fix bad solution 
         if self.sparse:
             x = self.Z
