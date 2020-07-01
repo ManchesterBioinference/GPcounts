@@ -6,7 +6,6 @@ from gpflow.config import default_float
 from gpflow.utilities import positive
 
 
-
 class NegativeBinomial(ScalarLikelihood):
     def __init__(self, alpha= 1.0,invlink=tf.exp,scale=1.0,nb_scaled=False, **kwargs):
         super().__init__( **kwargs)

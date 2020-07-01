@@ -31,8 +31,9 @@ tf.compat.v1.Session.inter_op_parallelism_threads = NUMCORES
 
 class Fit_GPcounts(object):
     
-    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False,nb_scaled=False, grid_search = False, gs = []):
+    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False,nb_scaled=False, grid_search = False,safe_mode = True,gs = []):
      
+        self.safe_mode = safe_mode
         self.gs = gs # initialize Grid search with length scale values 
         self.gs_item = None # items in grid
         if grid_search: # use grid search to find the best length scale
@@ -72,7 +73,7 @@ class Fit_GPcounts(object):
         self.var = None # GP variance of posterior predictive
         self.mean = None # GP mean of posterior predictive
         self.fix = False # fix hyper-parameters
-        # self.Scale = None
+
         # save likelihood of hyper-parameters of dynamic model to initialize the constant model
         self.lik_alpha = None  
         self.lik_km = None
@@ -118,6 +119,7 @@ class Fit_GPcounts(object):
               
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
+            
             if self.lik_name == 'Gaussian':
                 self.Y = self.Y.values # gene expression matrix
             else:
@@ -206,30 +208,25 @@ class Fit_GPcounts(object):
         normalized_ll = ll / ll.sum(0)
 
         iMAP = np.argmax(ll)
-        # MAP_model = models[iMAP]
-        self.model = models[iMAP]
+        MAP_model = models[iMAP]
         # Prediction
         Xnew = np.linspace(min(self.X[:,0]), max(self.X[:,0]), 100).reshape(-1)[:, None]
         x1 = np.c_[Xnew, np.ones(len(Xnew))[:, None]]
         x2 = np.c_[Xnew, (np.ones(len(Xnew)) * 2)[:, None]]
         Xtest = np.concatenate((x1, x2))
-        Xtest[np.where(Xtest[:, 0] <= self.model.kernel.xp), 1] = 1
+        Xtest[np.where(Xtest[:, 0] <= MAP_model.kernel.xp), 1] = 1
 
-        if self.lik_name == 'Gaussian':
-            mu, var = self.model.predict_y(Xtest)
-        else:
-            mu, var = self.samples_posterior_predictive_distribution(Xtest)
+        mu, var = self.samples_posterior_predictive_distribution(Xtest)
 
         del models
         self.branching = False
         return {'branching_probability':normalized_ll,
-                'branching_location':self.model.kernel.xp,
+                'branching_location':xp,
                 'mean': mu,
                 'variance':var,
                 'Xnew':Xnew,
                 'test_times':testTimes,
-                'MAP_model':self.model,
-                'likelihood':self.lik_name}
+                'MAP_model':MAP_model}
 
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
@@ -302,8 +299,9 @@ class Fit_GPcounts(object):
 
                         #test local optima case 2 
                         ll_ratio = model_1_log_likelihood - model_2_log_likelihood
-
-                        if self.optimize_ls:
+                        
+                        if not(self.safe_mode):
+                        #if self.optimize_ls:
                             if (ls < (10*(np.max(self.X)-np.min(self.X)))/100 and round(ll_ratio) <= 0) or (self.lik_name == 'Zero_inflated_negative_binomial'  and np.abs(km_1 - km_2) > 50.0 ):
                                 self.model_index = 1
                                 reset = True
@@ -388,11 +386,7 @@ class Fit_GPcounts(object):
         #Time = end - start
         #Time = str(datetime.timedelta(seconds=end - start))     
         return log_likelihood
-    
-    # def get_Scale(self):
-
-    #     return self.Scale
-    # fit a GP, fix Cholesky decomposition by random initialization if detected and test case1 of local optima      
+         
     def fit_GP(self,reset = False):
         
         self.init_hyper_parameters(reset) 
@@ -405,7 +399,7 @@ class Fit_GPcounts(object):
             #print(self.count_fix)
             
             if self.count_fix < 10 and self.optimize_ls: # fix failure by random restart 
-                #print('Fit Cholesky decomposition was not successful.')
+                print('Fit Cholesky decomposition was not successful.')
                 fit = self.fit_GP(True)
                 
             else:
@@ -423,7 +417,8 @@ class Fit_GPcounts(object):
             if log_likelihood > 0.0:
                 fit = self.fit_GP(True)
                 
-        if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching:
+        #if fit and self.optimize and self.count_fix < 5 and self.optimize_ls and not self.branching:
+        if not(self.safe_mode):   
             self.test_local_optima_case1()
         return fit
     
@@ -512,7 +507,7 @@ class Fit_GPcounts(object):
         ls = self.model.kernel.lengthscales.numpy()
         km_1 = 0
         # copy likelihood parameters and use them to fit constant model
-        self.kern_var = self.model.kernel.variance.numpy()
+        #self.kern_var = self.model.kernel.variance.numpy()
         if self.lik_name == 'Negative_binomial':
             self.lik_alpha  = self.model.likelihood.alpha.numpy()
         if self.lik_name == 'Zero_inflated_negative_binomial':
@@ -569,16 +564,14 @@ class Fit_GPcounts(object):
         if self.model_index == 2 and self.models_number == 2:
             self.hyper_parameters['ls'] = 1000.      
             if self.optimize and self.count_fix == 0:
-                self.hyper_parameters['var'] = self.kern_var
                 if self.lik_name == 'Negative_binomial':
                     self.hyper_parameters['alpha'] = self.lik_alpha
-                    
+
        
         else:
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
-            self.kern_var = None
             self.fix = False # fix kernel hyper-parameters    
         
         # reset gpflow graph
@@ -740,8 +733,8 @@ class Fit_GPcounts(object):
         return anomalies_index
     
     def test_local_optima_case1(self):
-        
-     # limit number of trial to fix bad solution 
+        print('test')
+        # limit number of trial to fix bad solution 
         if self.sparse:
             x = self.Z
         else:
