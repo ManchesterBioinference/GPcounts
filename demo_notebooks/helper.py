@@ -92,7 +92,7 @@ def plotBranching(d):
 
     lowess = sm.nonparametric.lowess
 
-    fig, ax = plt.subplots(2, 1, figsize=(10, 8), gridspec_kw={'height_ratios': [4, 3]})
+    fig, ax = plt.subplots(2, 1, figsize=(11, 9), gridspec_kw={'height_ratios': [4, 3]})
 
     mu = d['mean']
     var = d['variance']
@@ -114,8 +114,6 @@ def plotBranching(d):
         ax[0].fill_between(Xnew[:, 0], lower[lower_lim:upper_lim, :].numpy().reshape(-1), upper[lower_lim:upper_lim, :].numpy().reshape(-1),
                            color='r', alpha=0.2)
 
-        plotGene(ax[0], pt[:, 0], np.log(d['MAP_model'].data[1] + 1), pt[:, 1], size=40, alpha=.6)
-
     else:
         geneExpressionTitle = 'Counts'
         num_time_points = upper_lim
@@ -130,21 +128,25 @@ def plotBranching(d):
         ax[0].fill_between(Xnew[:, 0], lowess(percentile_5[lower_lim:upper_lim, 0], Xnew[:, 0], frac=1. / 5, return_sorted=False),
                            lowess(percentile_95[lower_lim:upper_lim, 0], Xnew[:, 0], frac=1. / 5, return_sorted=False), color='r',
                            alpha=0.2)
-        plotGene(ax[0], pt[:, 0], d['MAP_model'].data[1], pt[:, 1], size=40, alpha=.6)
 
-    ax[0].set_ylabel(geneExpressionTitle, fontsize=16)
+    plotGene(ax[0], pt[:, 0], d['MAP_model'].data[1], pt[:, 1], size=40, alpha=.6)
+    ax[0].set_ylabel(geneExpressionTitle, fontsize=14)
 
     blue_line = mlines.Line2D([], [], color='blue', linewidth=3., label='Predicted Mean (branch 1)')
-    red_line = mlines.Line2D([], [], color='red', linestyle='-', linewidth=3., label='Predicted Mean (branch 1)')
+    red_line = mlines.Line2D([], [], color='red', linestyle='-', linewidth=3., label='Predicted Mean (branch 2)')
     blue_dot = mlines.Line2D([], [], color='blue', marker='o', markersize='8', linestyle='', label='branch 1')
     red_dot = mlines.Line2D([], [], color='red', marker='o', markersize='8', linestyle='', label='branch 2')
     ax[0].legend(handles=[blue_line, red_line, blue_dot, red_dot], bbox_to_anchor=(1.25, 0.8), loc=10, fontsize=14,
                  frameon=True)
     #     ax[0].legend(handles=[blue_line, red_line, blue_dot, red_dot], loc=2, fontsize=12)
 
+    title = 'Gene: %s, Likelihood: %s, Branching evidence (log Bayes Factor): %.6f' % (
+    *d['geneName'], d['likelihood'], d['logBayesFactor'])
+    ax[0].set_title(title, fontsize=14, pad=20)
+
     width = testTimes[1] - testTimes[0]
     ax[1].bar(testTimes, d['branching_probability'], color='royalblue', align='center', edgecolor="white", width=width)
-    ax[1].set_xlabel('Pseudotime', fontsize=16)
-    ax[1].set_ylabel('Branching probability', fontsize=16)
+    ax[1].set_xlabel('Pseudotime', fontsize=14)
+    ax[1].set_ylabel('Branching probability', fontsize=14)
     plt.subplots_adjust(wspace=0, hspace=0)
     return fig, ax
