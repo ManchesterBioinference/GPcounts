@@ -92,7 +92,7 @@ def plotBranching(d):
 
     lowess = sm.nonparametric.lowess
 
-    fig, ax = plt.subplots(2, 1, figsize=(11, 9), gridspec_kw={'height_ratios': [4, 3]})
+    lik_name = {'Negative_binomial':'Negative binomial', 'Gaussian': 'Gaussian'}
 
     mu = d['mean']
     var = d['variance']
@@ -102,6 +102,8 @@ def plotBranching(d):
 
     lower_lim = len(Xnew)
     upper_lim = 2 * lower_lim
+
+    fig, ax = plt.subplots(2, 1, figsize=(11, 9), gridspec_kw={'height_ratios': [5, 3]})
 
     if d['likelihood'] == 'Gaussian':
         geneExpressionTitle = 'log(counts + 1)'
@@ -141,7 +143,7 @@ def plotBranching(d):
     #     ax[0].legend(handles=[blue_line, red_line, blue_dot, red_dot], loc=2, fontsize=12)
 
     title = 'Gene: %s, Likelihood: %s, Branching evidence (log Bayes Factor): %.6f' % (
-    *d['geneName'], d['likelihood'], d['logBayesFactor'])
+    *d['geneName'], lik_name[d['likelihood']], d['logBayesFactor'])
     ax[0].set_title(title, fontsize=14, pad=20)
 
     width = testTimes[1] - testTimes[0]
