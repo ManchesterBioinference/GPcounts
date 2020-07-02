@@ -31,7 +31,7 @@ tf.compat.v1.Session.inter_op_parallelism_threads = NUMCORES
 
 class Fit_GPcounts(object):
     
-    def __init__(self,X = None,Y= None,scale = None,sparse = False,scaled=False,nb_scaled=False, grid_search = False,safe_mode = True,gs = []):
+    def __init__(self,X = None,Y= None,scale = None,sparse = False,nb_scaled=False, grid_search = False,safe_mode = True,gs = []):
      
         self.safe_mode = safe_mode
         self.gs = gs # initialize Grid search with length scale values 
@@ -49,7 +49,6 @@ class Fit_GPcounts(object):
         
         self.transform = True # to use log(count+1) transformation
         self.sparse = sparse # use sparse or full inference 
-        self.scaled = scaled 
         self.nb_scaled = nb_scaled
         self.X = None # time points == cell or samples 
         self.M = None # number of inducing point
@@ -145,7 +144,7 @@ class Fit_GPcounts(object):
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
-        if self.scaled:
+        if self.nb_scaled:
             genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
             genes_results['q value']= self.qvalue(genes_results['p value'])
 
@@ -486,7 +485,7 @@ class Fit_GPcounts(object):
             likelihood = gpflow.likelihoods.Poisson()
 
         if self.lik_name == 'Negative_binomial':
-            if self.scaled:
+            if self.nb_scaled:
                 scale=pd.DataFrame(self.scale)
                 self.Scale = self.scale.iloc[:,self.index]
                 self.Scale=np.array(self.Scale)
