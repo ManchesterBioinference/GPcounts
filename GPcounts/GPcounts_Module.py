@@ -200,11 +200,12 @@ class Fit_GPcounts(object):
         for mm in models:
             log_ll[i] = mm.log_posterior_density().numpy()
             i = i + 1
-
-        tmp = -500. - max(log_ll)
-        for i in range(0, bins_num):
-            ll[i] = np.exp(log_ll[i] + tmp)
-        normalized_ll = ll / ll.sum(0)
+        p = self.CalculateBranchingEvidence({'loglik': log_ll}, testTimes)
+        ll = p['posteriorBranching']
+        # tmp = -500. - max(log_ll)
+        # for i in range(0, bins_num):
+        #     ll[i] = np.exp(log_ll[i] + tmp)
+        # normalized_ll = ll / ll.sum(0)
 
         iMAP = np.argmax(ll)
         # MAP_model = models[iMAP]
@@ -221,12 +222,10 @@ class Fit_GPcounts(object):
         else:
             mu, var = self.samples_posterior_predictive_distribution(Xtest)
 
-        p = self.CalculateBranchingEvidence({'loglik':log_ll}, testTimes)
-
         del models
         self.branching = False
         return {'geneName':self.genes_name,
-                'branching_probability':normalized_ll,
+                'branching_probability':ll,
                 'branching_location':self.model.kernel.xp,
                 'mean': mu,
                 'variance':var,
@@ -245,7 +244,8 @@ class Fit_GPcounts(object):
         of branching vs not branching
         """
         # Calculate probability of branching at each point
-        o = d['loglik'][:-1]
+        # o = d['loglik'][:-1]
+        o = d['loglik']
         pn = np.exp(o - np.max(o))
         p = pn / pn.sum()  # normalize
 
