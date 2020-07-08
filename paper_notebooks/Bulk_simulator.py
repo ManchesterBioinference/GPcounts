@@ -107,7 +107,7 @@ for c in tqdm(max_mean): # c to change the mean
             samples.append(f_sample)
             samples_constant.append(f_constant)
             
-            
+            '''
             fig = plt.figure()
             x_spline = np.linspace(0.,1,4)
             print(x_spline)
@@ -120,7 +120,7 @@ for c in tqdm(max_mean): # c to change the mean
             plt.show()
             samples.append(f_sample)
             samples_constant.append(f_constant)
-            
+            '''
                 
         samples = vstack(samples)
         samples = samples.astype(float)

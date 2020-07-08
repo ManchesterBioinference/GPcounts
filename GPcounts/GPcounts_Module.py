@@ -35,7 +35,7 @@ class Fit_GPcounts(object):
      
         self.safe_mode = safe_mode
         self.folder_name = 'GPcounts_models/'
-        self.gs = gs # initialize Grid search with length scale values 
+        #self.gs = gs # initialize Grid search with length scale values 
         self.gs_item = None # items in grid
         '''
         if grid_search: # use grid search to find the best length scale
@@ -46,7 +46,7 @@ class Fit_GPcounts(object):
                 
         else:
         '''
-        self.gs = [10]  
+        self.gs = [5]  
         self.optimize_ls = True # optimize length scale for single value initialization case or 
         # for the best value selected by grid search not optimize in case of grid search 
         
@@ -391,7 +391,7 @@ class Fit_GPcounts(object):
     
     #Save and get log likelihood of successed fit and set likelihood to Nan in case of failure 
     def fit_model(self,reset = False):
-        
+       
         fit = self.fit_GP(reset)
         if fit: # save the model in case of successeded fit
             if self.sparse and self.lik_name is not 'Gaussian': 
@@ -413,9 +413,9 @@ class Fit_GPcounts(object):
         else: # set log likelihood to Nan in case of Cholesky decomposition or optimization failure
             log_likelihood = np.nan  
             self.model = np.nan
-      
+    
+           
         return log_likelihood
-         
     def fit_GP(self,reset = False):
         
         self.init_hyper_parameters(reset=reset) 
@@ -689,7 +689,7 @@ class Fit_GPcounts(object):
         params['test_name'] = test_name
         self.lik_name = likelihood 
         params['likelihood'] = self.lik_name
-        self.user_init = False
+
         if test_name == 'One_sample_test':
             self.models_number = 2
         elif test_name == 'Two_samples_test':
@@ -764,7 +764,7 @@ class Fit_GPcounts(object):
 
         return params
     
-  def test_local_optima_case1(self):
+    def test_local_optima_case1(self):
         # limit number of trial to fix bad solution 
         if self.sparse:
             x = self.Z
