@@ -8,18 +8,18 @@ import statsmodels.api as sm
 import numpy as np
 import matplotlib.lines as mlines
 
-def plot(params,test,likelihood,X,Y,sparse = False):
+def plot(params,X,Y,sparse = False):
     
     indexes = Y.index.values # list of genes to be plotted 
     xtest = np.linspace(np.min(X)-.1,np.max(X)+.1,100)[:,None] # points to make prediction
-    
+    #likelihood = params['likelihood']
     for i in range(len(indexes)):
         fig = plt.figure()
         print(indexes[i])
         model_index = 1
         y = Y.iloc[i].values # genes expression data
         
-        if likelihood == 'Gaussian':
+        if params['likelihood'] == 'Gaussian':
                 y = np.log(y+1)
         
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
@@ -34,7 +34,7 @@ def plot(params,test,likelihood,X,Y,sparse = False):
 
             plt.plot(xtest, mean,color= c, lw=2) 
 
-            if likelihood == 'Gaussian':
+            if params['likelihood'] == 'Gaussian':
                 plt.fill_between(xtest[:,0],
                                     mean[:,0] - 1*np.sqrt(var[:,0]),
                                     mean[:,0] + 1*np.sqrt(var[:,0]),color=c,alpha=0.2) # one standard deviation
@@ -58,7 +58,7 @@ def plot(params,test,likelihood,X,Y,sparse = False):
                 percentile_95 = [(i > 0) * i for i in percentile_95]
                 plt.fill_between(xtest[:,0],percentile_5,percentile_95,color=c,alpha=0.1)
 
-            if test == 'Two_samples_test':
+            if params['test_name'] == 'Two_samples_test':
                 if model_index == 1:
                     plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data    
                     plt.scatter(X[int(X.shape[0]/2)::],y[int(X.shape[0]/2)::], s=30, marker='o', color= 'green',alpha=1.) #data
@@ -77,7 +77,7 @@ def plot(params,test,likelihood,X,Y,sparse = False):
                 plt.scatter(inducing_points,np.zeros(inducing_points.shape[0]),s=30,marker = '^',color='red',label='inducing points',alpha=1.) 
                 plt.legend(loc='upper center', bbox_to_anchor=(1.20, 0.1))
             
-            if not(test == 'Two_samples_test' and model_index == 2):
+            if not(params['test_name'] == 'Two_samples_test' and model_index == 2):
                 plt.show()
             
             model_index = model_index + 1
@@ -92,7 +92,7 @@ def plotBranching(d):
 
     lowess = sm.nonparametric.lowess
 
-    lik_name = {'Negative_binomial':'Negative binomial', 'Gaussian': 'Gaussian'}
+    fig, ax = plt.subplots(2, 1, figsize=(10, 8), gridspec_kw={'height_ratios': [4, 3]})
 
     mu = d['mean']
     var = d['variance']
@@ -102,8 +102,6 @@ def plotBranching(d):
 
     lower_lim = len(Xnew)
     upper_lim = 2 * lower_lim
-
-    fig, ax = plt.subplots(2, 1, figsize=(11, 9), gridspec_kw={'height_ratios': [5, 3]})
 
     if d['likelihood'] == 'Gaussian':
         geneExpressionTitle = 'log(counts + 1)'
@@ -115,6 +113,8 @@ def plotBranching(d):
         ax[0].plot(Xnew[:, 0], mu[lower_lim:upper_lim, :], '-', lw=3, color='r')
         ax[0].fill_between(Xnew[:, 0], lower[lower_lim:upper_lim, :].numpy().reshape(-1), upper[lower_lim:upper_lim, :].numpy().reshape(-1),
                            color='r', alpha=0.2)
+
+        plotGene(ax[0], pt[:, 0], np.log(d['MAP_model'].data[1] + 1), pt[:, 1], size=40, alpha=.6)
 
     else:
         geneExpressionTitle = 'Counts'
@@ -130,25 +130,21 @@ def plotBranching(d):
         ax[0].fill_between(Xnew[:, 0], lowess(percentile_5[lower_lim:upper_lim, 0], Xnew[:, 0], frac=1. / 5, return_sorted=False),
                            lowess(percentile_95[lower_lim:upper_lim, 0], Xnew[:, 0], frac=1. / 5, return_sorted=False), color='r',
                            alpha=0.2)
+        plotGene(ax[0], pt[:, 0], d['MAP_model'].data[1], pt[:, 1], size=40, alpha=.6)
 
-    plotGene(ax[0], pt[:, 0], d['MAP_model'].data[1], pt[:, 1], size=40, alpha=.6)
-    ax[0].set_ylabel(geneExpressionTitle, fontsize=14)
+    ax[0].set_ylabel(geneExpressionTitle, fontsize=16)
 
     blue_line = mlines.Line2D([], [], color='blue', linewidth=3., label='Predicted Mean (branch 1)')
-    red_line = mlines.Line2D([], [], color='red', linestyle='-', linewidth=3., label='Predicted Mean (branch 2)')
+    red_line = mlines.Line2D([], [], color='red', linestyle='-', linewidth=3., label='Predicted Mean (branch 1)')
     blue_dot = mlines.Line2D([], [], color='blue', marker='o', markersize='8', linestyle='', label='branch 1')
     red_dot = mlines.Line2D([], [], color='red', marker='o', markersize='8', linestyle='', label='branch 2')
     ax[0].legend(handles=[blue_line, red_line, blue_dot, red_dot], bbox_to_anchor=(1.25, 0.8), loc=10, fontsize=14,
                  frameon=True)
     #     ax[0].legend(handles=[blue_line, red_line, blue_dot, red_dot], loc=2, fontsize=12)
 
-    title = 'Gene: %s, Likelihood: %s, Branching evidence (log Bayes Factor): %.6f' % (
-    *d['geneName'], lik_name[d['likelihood']], d['logBayesFactor'])
-    ax[0].set_title(title, fontsize=14, pad=20)
-
     width = testTimes[1] - testTimes[0]
     ax[1].bar(testTimes, d['branching_probability'], color='royalblue', align='center', edgecolor="white", width=width)
-    ax[1].set_xlabel('Pseudotime', fontsize=14)
-    ax[1].set_ylabel('Branching probability', fontsize=14)
+    ax[1].set_xlabel('Pseudotime', fontsize=16)
+    ax[1].set_ylabel('Branching probability', fontsize=16)
     plt.subplots_adjust(wspace=0, hspace=0)
     return fig, ax
