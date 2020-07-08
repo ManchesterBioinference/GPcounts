@@ -188,6 +188,7 @@ class Fit_GPcounts(object):
         X = self.X
         for i in range(0, bins_num):
             del self.X
+            # gpflow.utilities.print_summary(self.model, fmt='notebook')
             del self.model
 
             self.xp = testTimes[i]
@@ -615,7 +616,8 @@ class Fit_GPcounts(object):
             #save likelihood parameters to initialize constant model
             self.lik_alpha = None 
             self.lik_km = None
-            self.fix = False # fix kernel hyper-parameters    
+            if not self.branching:
+                self.fix = False # fix kernel hyper-parameters
         
         # reset gpflow graph
         tf.compat.v1.get_default_graph()
