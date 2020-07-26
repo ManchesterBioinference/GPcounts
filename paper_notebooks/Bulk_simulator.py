@@ -15,9 +15,9 @@ from scipy.interpolate import CubicSpline
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-S = 3 # number of samples/cells  
-x = sorted([0. , 0.2, 0.4, 0.6, 0.8, 1. ]*S)# Time points
-print(x)
+S = 2 # number of samples/cells  
+x = sorted([0.,.1 , .2,.3, .4,.5 ,.6,.7 ,.8,.9, 1.]*S)# Time points
+#print(x)
 
 def sin_fun(): 
     f = c+ a* np.sin(b*x+d) 
@@ -50,23 +50,25 @@ def sample_count(fun_num):
         f = Cubic_spline()
         
     f = f 
-    #+ np.random.uniform(-1.,1.) # add randomness 
     plt.plot(x,f)
     # exponentiate generative function to set the mean of NB distribution and simulate differentially expressed genes
     f_sample = sample_from_NegativeBinomal(1./alpha,np.exp(f)).T
-    
-   
-    min_fun = np.max(f)/2   
          
     # sample constant function 
-    f_con = np.random.uniform(min_fun,np.max(f),1) 
-    f_con = f_con * np.ones(len(x))
+    #if mm == max_mean[0]:
+    #    f_con_min = 0
+    #else:
+        
+    f_con = np.median(f)
+    #np.random.uniform(0,np.max(f),1) 
+    #
+    f_con = f_con * np.ones(len(x)) 
     plt.plot(x,f_con)
     
     #simulate non-differentially expressed genes from constant function    
     constant_sample = sample_from_NegativeBinomal(1./alpha,np.exp(f_con)).T
        
-    return f_sample,constant_sample
+    return f_sample,constant_sample,f
 
 def vstack(samples):
     samples = np.vstack(samples)
@@ -76,58 +78,76 @@ samples = []
 samples_constant = []
 
 Dispersion_ranges = [
-                  [.01,.1]  # low dispersion range
+                   [.01,.1]  # low dispersion range
                   ,[1.,3.] # high dispersion range
                   ]   
 
-max_mean = [2,7] # to change function mean from low count to high count data 
+max_mean = [0,5] # to change function mean from low count to high count data 
 #4
-for c in tqdm(max_mean): # c to change the mean 
+for mm in tqdm(max_mean): # c to change the mean 
     for dispersion in range(len(Dispersion_ranges)):
         np.random.seed(0) # reset to sample new dataset
         random.seed(0)
         samples = []
         samples_constant = []
        
-        for i in range(10):
-            
-           
-            a = np.random.uniform(-2,4,1) 
-            y = np.random.uniform(-2,a+1, 4) + c
+        for i in range(200):
             b = np.random.uniform(np.pi/2,np.pi*2,1)
             d = np.random.uniform(0,np.pi*2,1)
+            #high counts     
+            if mm == max_mean[1]:
+                if dispersion == 0:
+                    a = .5
+                    c = 7
+                    y = np.random.choice(list(range(5,10)),3,replace=False)
+                    #np.random.uniform(6,10,3)
+                else:
+                    a = 2.5
+                    c = 6
+                    y = np.random.choice(list(range(5,12)),3,replace=False)
+                    #np.random.uniform(7,10,3)
+                   
+            # low counts
+            else:
+                if dispersion == 0:
+                    a = .7
+                    c = .5
+                    y = np.random.uniform(-.5,2,3) 
+                   
+                else:
+                    a = 1.25
+                    c = 1
+                    y = np.random.choice(list(range(-1,4)),3,replace=False)
+                    
             print('a',a)
             print('b',b)
             print('c',c)
             print('d',d)
             
             fig = plt.figure()
-            f_sample,f_constant = sample_count(0)
+            f_sample,f_constant,f = sample_count(0)
             plt.show()
             samples.append(f_sample)
             samples_constant.append(f_constant)
             
-            '''
             fig = plt.figure()
-            x_spline = np.linspace(0.,1,4)
+            x_spline = np.linspace(0.,1,3)
             print(x_spline)
-            y = np.random.uniform(-1,a+1, 4) + c
-            
-            f_cs = CubicSpline(x_spline,y)
             print('y',y)
-            #x = np.linspace(x_spline[0],x_spline[5],len(T))
-            f_sample,f_constant = sample_count(1)
+            f_cs = CubicSpline(x_spline,y)
+            
+            f_sample,f_constant,f = sample_count(1)
             plt.show()
             samples.append(f_sample)
             samples_constant.append(f_constant)
-            '''
+            
                 
         samples = vstack(samples)
         samples = samples.astype(float)
         samples_constant = vstack(samples_constant)
         samples_constant = samples_constant.astype(float)
      
-        if c == max_mean[0]:
+        if mm == max_mean[0]:
             count_level = 'low_counts_'
         else:
             count_level = 'high_counts_'

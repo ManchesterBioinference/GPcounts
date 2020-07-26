@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.lines as mlines
+import gpflow
 
 def plot(params,X,Y,sparse = False):
     
@@ -24,6 +25,7 @@ def plot(params,X,Y,sparse = False):
         
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
             
+            gpflow.utilities.print_summary(model, fmt='notebook')
             plt.tick_params(labelsize='large', width=2)     
             plt.ylabel('Gene Expression', fontsize=16)
             plt.xlabel('Times', fontsize=16)

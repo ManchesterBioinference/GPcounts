@@ -355,7 +355,7 @@ class Fit_GPcounts(object):
                                 model_2_log_likelihood = self.fit_model(reset)
 
                                 ll_ratio = model_1_log_likelihood - model_2_log_likelihood
-                        '''
+                         '''
                 if np.isnan(model_1_log_likelihood) or np.isnan(model_2_log_likelihood):
                     model_2_log_likelihood = np.nan
                     ll_ratio = np.nan
@@ -570,7 +570,8 @@ class Fit_GPcounts(object):
             self.hyper_parameters['ls'] = length_scale
         
         if variance is None: 
-          
+            #self.hyper_parameters['var'] = 1.
+            
             if self.lik_name == 'Gaussian' and not self.transform:
                 self.hyper_parameters['var'] = np.mean(self.y+1**2) 
             else:
@@ -586,6 +587,7 @@ class Fit_GPcounts(object):
         
         if km is None: 
             self.hyper_parameters['km'] = 35.
+            #35.
         else:
             self.hyper_parameters['km'] = km
         
@@ -609,7 +611,7 @@ class Fit_GPcounts(object):
             self.count_fix = self.count_fix +1 
             self.seed_value = self.seed_value + 1
             np.random.seed(self.seed_value)
-            self.hyper_parameters['ls'] = np.random.uniform((1.*(np.max(self.X)-np.min(self.X)))/100 ,(30*(np.max(self.X)-np.min(self.X)))/100)
+            self.hyper_parameters['ls'] = np.random.uniform((.25*(np.max(self.X)-np.min(self.X)))/100 ,(30.*(np.max(self.X)-np.min(self.X)))/100)
             self.hyper_parameters['var'] = np.random.uniform(0. ,10.)
             self.hyper_parameters['alpha'] = np.random.uniform(0., 10.)
             self.hyper_parameters['km'] = np.random.uniform(0., 100.) 
