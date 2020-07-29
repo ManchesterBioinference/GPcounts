@@ -8,7 +8,7 @@ using the GPflow library.
 
 1. Clone GPcounts repository:
 ```
-git clone git@github.com:ManchesterBioinference/GPcounts.git
+git clone https://github.com/ManchesterBioinference/GPcounts.git
 ```
 
 2. Install:
