@@ -127,10 +127,8 @@ class Fit_GPcounts(object):
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].fillna(0)
-        if self.nb_scaled:
-            genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
-            genes_results['q value']= self.qvalue(genes_results['p value'])
-
+        #if self.nb_scaled:
+           
         return genes_results
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
@@ -243,7 +241,14 @@ class Fit_GPcounts(object):
         lratiostable = llmax + np.log(1 + np.exp(obj[np.arange(obj.size) != illmax] - llmax).sum()) - o[-1] - np.log(Nb)
 
         return {'posteriorBranching': p, 'logBayesFactor': lratiostable}
-
+     
+        
+    def calculate_FDR(self,genes_results):
+        genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+        genes_results['q value']= self.qvalue(genes_results['p value'])
+        
+        return genes_results
+    
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
         
