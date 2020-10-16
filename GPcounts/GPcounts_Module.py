@@ -15,6 +15,8 @@ import random
 from .utilities import qvalue
 import scipy as sp
 from scipy import interpolate
+from robustgp import ConditionalVariance
+from pandas import DataFrame
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -34,8 +36,9 @@ class Fit_GPcounts(object):
         self.sparse = sparse # use sparse or full inference 
         self.nb_scaled = nb_scaled
         self.X = None # time points == cell or samples 
-        self.M = None # number of inducing point
+        self.M = None # number of inducing points
         self.Z = None # inducing points
+        self.ConditionalVariance = False # set inducing points using conditional variance from robustGP method
         self.Y = None # gene expression matrix
         self.Y_copy = None #copy of gene expression matrix
         self.D =  None # number of genes
@@ -44,6 +47,10 @@ class Fit_GPcounts(object):
         self.genes_name = None
         self.cells_name = None  
         self.Scale = None
+        self.kernel = None
+        #self.prob_zero_mean = None
+        self.gene_switched = False
+        self.bic = None
         
         # test information
         self.lik_name = None # the selected likelihood name 
@@ -82,7 +89,7 @@ class Fit_GPcounts(object):
         
         if X.shape[0] == Y.shape[1]:
             self.X = X
-            self.cells_name = self.X.index.values
+            self.cells_name = list(map(str,list(X.index.values)))
             self.X = X.values.astype(float)
             
             if len(self.X.shape) > 1:
@@ -91,12 +98,14 @@ class Fit_GPcounts(object):
                 self.X = self.X.reshape([-1, 1])
             
             if self.sparse:
+                
                 self.M = int((5*(len(self.X)))/100) # number of inducing points is 5% of length of time points 
+
                 # set inducing points by K-mean cluster algorithm
-                kmeans = KMeans(n_clusters= self.M).fit(self.X)
-                self.Z = kmeans.cluster_centers_
-                self.Z = np.sort(self.Z,axis=None).reshape([self.M,1])
-                self.Z = self.Z.reshape([self.Z.shape[0],1])
+                # kmeans = KMeans(n_clusters= self.M).fit(self.X)
+                # self.Z = kmeans.cluster_centers_
+                # self.Z = np.sort(self.Z,axis=None).reshape([self.M,1])
+                # self.Z = self.Z.reshape([self.Z.shape[0],1])
               
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
@@ -122,14 +131,38 @@ class Fit_GPcounts(object):
         return genes_results
         
     def One_sample_test(self,lik_name= 'Negative_binomial', transform = True):
-        
+    
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].clip(lower=0)
         genes_results['log_likelihood_ratio'] = genes_results['log_likelihood_ratio'].fillna(0)
-        #if self.nb_scaled:
            
         return genes_results
+
+
+    def Model_selection_test(self,lik_name = 'Negative_binomial',kernel = None):
+       
+        ker_list = ['linear', 'periodic', 'rbf']
+        genes_index = range(self.D)  
+        df = pd.DataFrame()
+        df['Dynamic_model_log_likelihood'] = 0
+        df['Gene'] = 0
+        df['Model'] = 0
+        df['Constant_model_log_likelihood'] = 0
+        df['log_likelihood_ratio'] = 0
+        df['BIC'] = 0
+
+
+        for word in ker_list:
+            self.kernel = word
+            results = self.run_test(lik_name,2,genes_index)        
+            results['BIC'] = -2*results['Dynamic_model_log_likelihood'] + self.K*np.log(self.X.shape[0])
+            results['Gene'] = self.genes_name
+
+            results['Model'] = word
+            df = df.merge(results, how = 'outer')
+
+        return df
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
         
@@ -244,19 +277,55 @@ class Fit_GPcounts(object):
      
         
     def calculate_FDR(self,genes_results):
-        genes_results['p value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
-        genes_results['q value']= self.qvalue(genes_results['p value'])
+        genes_results['p_value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+        genes_results['q_value']= self.qvalue(genes_results['p_value'])
         
         return genes_results
     
+    def prob_of_zeros(self,lik_name= 'Negative_binomial'):
+        
+        genes_index = range(self.D)
+        genes_results = self.run_test(lik_name,1,genes_index)
+        #genes_results = 1 - genes_results
+        self.gene_switched = True
+        params = self.load_predict_models(self.genes_name,'Infer_trajectory',lik_name)
+        genes = dict(zip(self.genes_name, params['states']))
+        gene_state = pd.DataFrame.from_dict(genes, orient='index', columns= self.cells_name)
+        gene_state = 1 - gene_state
+        return gene_state
+    
+    def gene_state(self,results,cutoff = None):
+        print(cutoff)
+        if self.gene_switched:
+            non_zero = results.copy()
+           # non_zero = 1-non_zero 
+            if cutoff == None:
+                cutoff = (non_zero.max(axis = 1).values+non_zero.min(axis = 1).values)/2.0 # mid range 
+                cutoff = cutoff[0]
+            print(cutoff)
+            non_zero[non_zero >= cutoff] = 1
+            non_zero[non_zero < cutoff] = 0
+        return non_zero
+
+    def set_inducing_points(self,Z):
+        self.Z = Z
+        self.M = self.Z.shape[0]
+    
+    def ConditionalVariance_inducing_points(self,M = 0):
+        if M != 0:
+            self.M = M   
+        self.ConditionalVariance = True
+                   
     # Run the selected test and get likelihoods for all genes   
     def run_test(self,lik_name,models_number,genes_index,branching = False):
         
         genes_results = {}
+        genes_state = {}
         self.Y = self.Y_copy
         self.models_number = models_number
         self.lik_name = lik_name
         self.optimize = True
+        self.gene_switched = False
         
         #column names for likelihood dataframe
         if self.models_number == 1:
@@ -265,14 +334,15 @@ class Fit_GPcounts(object):
             column_name = ['Dynamic_model_log_likelihood','Constant_model_log_likelihood','log_likelihood_ratio']
         else:
             column_name = ['Shared_log_likelihood','model_1_log_likelihood','model_2_log_likelihood','log_likelihood_ratio'] 
-        
+
+                 
         for self.index in tqdm(genes_index):
           
             self.y = self.Y[self.index].astype(float)
             self.y = self.y.reshape([-1,1])
             results = self.fit_single_gene(column_name)
             genes_results[self.genes_name[self.index]] = results
-
+             
         return pd.DataFrame.from_dict(genes_results, orient='index', columns= column_name)
     
     # fit numbers of GPs = models_number to run the selected test
@@ -333,9 +403,8 @@ class Fit_GPcounts(object):
                 ll_ratio = np.nan
             else:
                 ll_ratio = ((model_2_log_likelihood+model_3_log_likelihood)-model_1_log_likelihood)
-
             results = [model_1_log_likelihood,model_2_log_likelihood,model_3_log_likelihood,ll_ratio]
-
+    
         return results
     
     #Save and get log likelihood of successed fit and set likelihood to Nan in case of failure 
@@ -392,15 +461,34 @@ class Fit_GPcounts(object):
         #select kernel RBF,constant or branching kernel
         if self.hyper_parameters['ls'] == -1.: # flag to fit constant kernel
             kern = gpflow.kernels.Constant(variance= self.hyper_parameters['var']) 
+            
+        elif self.kernel:
+            if 'linear' in self.kernel:
+                kern = gpflow.kernels.Linear(variance = self.hyper_parameters['var'])
+                print('Fitting GP with Linear Kernel')
+                self.K = 3
+            elif 'periodic' in self.kernel:
+                kern = gpflow.kernels.Periodic((gpflow.kernels.SquaredExponential(variance = self.hyper_parameters['var'],lengthscales = self.hyper_parameters['ls'])))
+                print('Fitting GP with Periodic Kernel')
+                self.K = 4
+            else:
+                kern = gpflow.kernels.RBF(variance= self.hyper_parameters['var'],
+                           lengthscales = self.hyper_parameters['ls'])
+                print('Fitting GP with RBF Kernel')
+                self.K = 4
+
+
         else:
-            kern = gpflow.kernels.RBF( variance= self.hyper_parameters['var'],
-                           lengthscales = self.hyper_parameters['ls'])      
-        
+            kern = gpflow.kernels.RBF(variance= self.hyper_parameters['var'],
+                           lengthscales = self.hyper_parameters['ls'])  
+
+
+
         if self.branching:
             del kern
             if self.fix:
                 kern = gpflow.kernels.RBF(variance=self.branching_kernel_var,
-                                          lengthscales=self.branching_kernel_ls)
+                                      lengthscales=self.branching_kernel_ls)
                 set_trainable(kern.lengthscales,False)
                 set_trainable(kern.variance,False)
             else:
@@ -434,6 +522,10 @@ class Fit_GPcounts(object):
                 self.y = np.log(self.y+1)
             
             if self.sparse:
+                if self.ConditionalVariance:
+                    init_method = ConditionalVariance()
+                    self.Z = init_method.compute_initialisation(self.X, self.M, kernel)[0]
+                    
                 self.model =  gpflow.models.SGPR((self.X,self.y), kernel=kernel,inducing_variable=self.Z)
                 if self.model_index == 2 and self.models_number == 2:
                     set_trainable(self.model.inducing_variable.Z,False)
@@ -444,6 +536,10 @@ class Fit_GPcounts(object):
         else:
                         
             if self.sparse:
+                if self.ConditionalVariance:
+                    init_method = ConditionalVariance()
+                    self.Z = init_method.compute_initialisation(self.X, self.M, kernel)[0]
+             
                 self.model = gpflow.models.SVGP( kernel ,likelihood,self.Z) 
                 training_loss = self.model.training_loss_closure((self.X, self.y))
                 if self.model_index == 2 and self.models_number == 2:
@@ -453,13 +549,22 @@ class Fit_GPcounts(object):
                 self.model = gpflow.models.VGP((self.X, self.y) , kernel , likelihood) 
                 training_loss = self.model.training_loss
      
-        if self.optimize:
+        if self.optimize:    
+            if self.ConditionalVariance:
+                set_trainable(self.model.inducing_variable.Z,False)
+            '''
+                for _ in range(10):
+                    # Optimise w.r.t. hyperparmeters here...
+                    Z = init_method.compute_initialisation(self.X,self.M, kernel)[0]# Reinit with the new kernel hyperparameters
+                    self.model.inducing_variable.Z = gpflow.Parameter(Z)
+            else:
+            '''
             o = gpflow.optimizers.Scipy()
             res = o.minimize(training_loss, variables=self.model.trainable_variables,options=dict(maxiter=5000))
-            
+
             if not(res.success): # test if optimization fail
                 if self.count_fix < 10: # fix failure by random restart 
-                    #print('Optimization fail.')     
+                    print('Optimization fail.')     
                     fit = self.fit_GP(True)
 
                 else:
@@ -482,6 +587,8 @@ class Fit_GPcounts(object):
         
         filename += self.genes_name[self.index]+'_model_'+str(self.model_index)
         return filename
+
+
     
      # user assign the default values for hyper_parameters
     def initialize_hyper_parameters(self,length_scale = None,variance = None,alpha = None,km = None):
@@ -557,39 +664,45 @@ class Fit_GPcounts(object):
         self.var = None 
         self.mean = None   
     
-    def generate_Samples_from_distribution(self,mean):
-        
+    def generate_Samples_from_distribution(self,mean,num_samples):
+        prob_zero_mean = None
         y = []
         if self.lik_name == 'Poisson':
             for i in range(mean.shape[0]):
-                y.append(ss.poisson.rvs(mean[i], size = 500))
+                y.append(ss.poisson.rvs(mean[i], size = num_samples))
 
         if self.lik_name == 'Negative_binomial':
             if self.model.likelihood.alpha.numpy() == 0:
                 for i in range(mean.shape[0]):
-                     y.append(ss.poisson.rvs(mean[i], size = 500))
+                     y.append(ss.poisson.rvs(mean[i], size = num_samples))
                 
             else:
                 r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
+            if self.gene_switched:    
+                prob_zero_mean = np.power( 1. +  ( r * mean),(-(1./r)))
             prob = r / (mean+ r)   # p probability of success
+                
             for i in range(mean.shape[0]):
-                y.append(ss.nbinom.rvs(r, prob[i], size = 500))
+                y.append(ss.nbinom.rvs(r, prob[i], size = num_samples))
 
         if self.lik_name == 'Zero_inflated_negative_binomial':
             r = 1./self.model.likelihood.alpha.numpy()  # r  number of failures
             prob = r / (mean+ r)   # p probability of success
             km = self.model.likelihood.km.numpy() # Michaelin-Menten (MM) constant
             psi = 1.- (mean/(km+mean)) # psi probability of zeros
+            if self.gene_switched:
+                prob_zero_mean = psi  
+            
             for i in range(mean.shape[0]):
                 B = ss.bernoulli.rvs(size=1,p = 1-psi[i])
                 if B == 0:
-                    y.append(np.zeros(500))
+                    y.append(np.zeros(num_samples))
                 else:
-                    y.append(ss.nbinom.rvs(r, prob[i], size = 500))       
+                    y.append(ss.nbinom.rvs(r, prob[i], size = num_samples))       
         y = np.vstack(y)
-        return y
+        return y, prob_zero_mean
 
-    def samples_posterior_predictive_distribution(self,xtest):
+    def samples_posterior_predictive_distribution(self,xtest,num_samples = 500):
         
         var = []
         f_samples = []
@@ -597,20 +710,27 @@ class Fit_GPcounts(object):
             f_samples.append(self.model.predict_f_samples(xtest, 5))
             f = np.vstack(f_samples)
             link_f = np.exp(f[:, :, 0])
-            var.append(self.generate_Samples_from_distribution(np.mean(link_f, 0)).T)
+            y,prob_zero_mean = self.generate_Samples_from_distribution(np.mean(link_f, 0),num_samples)
+            var.append(y.T)
 
         var = np.vstack(var)
         if self.branching:
             mean = np.mean(link_f, axis=0)
         else:
             mean = np.mean(var,axis = 0)
-            mean = savgol_filter(np.mean(var,axis = 0), int(xtest.shape[0]/2)+1, 3)
+            if int(xtest.shape[0]/2)%2 == 0:
+                window_length = int(xtest.shape[0]/2)+1
+            else:
+                window_length = int(xtest.shape[0]/2)
+ 
+            mean = savgol_filter(np.mean(var,axis = 0), window_length, 3)
             mean = [(i > 0) * i for i in mean]
-        return mean,var
+        return mean,var,prob_zero_mean
   
     def load_predict_models(self,genes_name,test_name,likelihood = 'Negative_binomial',predict = True):        
         params = {}
         genes_models = []
+        genes_states = [] 
         genes_means = []
         genes_vars = []
         self.Y = self.Y_copy
@@ -631,6 +751,7 @@ class Fit_GPcounts(object):
             models = []
             means = []
             variances = []
+            states = []
 
             self.index = self.genes_name.index(gene)
            
@@ -660,6 +781,7 @@ class Fit_GPcounts(object):
                 self.y = self.Y[self.index]
                 self.y = self.y.reshape([self.N,1])
                 successed_fit = self.fit_GP()
+                
                 # restore check point
                 if successed_fit:
                     ckpt = tf.train.Checkpoint(model=self.model, step=tf.Variable(1))
@@ -672,7 +794,9 @@ class Fit_GPcounts(object):
                             var = var.numpy()
 
                         else:
-                            mean, var = self.samples_posterior_predictive_distribution(xtest)
+                            mean, var,state = self.samples_posterior_predictive_distribution(xtest)
+                            mean_, var_,state = self.samples_posterior_predictive_distribution(self.X,num_samples = 1)
+                            
                     else:
                          mean = var = 0
                 else:
@@ -681,6 +805,8 @@ class Fit_GPcounts(object):
                 means.append(mean)
                 variances.append(var)
                 models.append(self.model)
+                #if self.gene_switched:
+                #    states.append(state)
 
                 if self.models_number == 3 and model_index > 0:
                     self.set_X_Y(X_df,Y_df)
@@ -688,10 +814,15 @@ class Fit_GPcounts(object):
             genes_means.append(means)
             genes_vars.append(variances)
             genes_models.append(models)
+            if self.gene_switched:
+                    genes_states.append(state)
+
             
         params['means']= genes_means
         params['vars'] = genes_vars
         params['models']= genes_models
+        if self.gene_switched:
+                    params['states'] = genes_states
         
         return params
     
@@ -711,7 +842,7 @@ class Fit_GPcounts(object):
             self.var = var.numpy()
         else:
             # mean of posterior predictive samples
-            self.mean,self.var = self.samples_posterior_predictive_distribution(xtest)        
+            self.mean,self.var,prob_zero_mean = self.samples_posterior_predictive_distribution(xtest)        
 
         mean_mean = np.mean(self.mean) 
         y_max = np.max(self.y)
@@ -790,4 +921,4 @@ class Fit_GPcounts(object):
         # reshape qvalues
         qv = qv.reshape(original_shape)
 
-        return qv    
+        return qv   
