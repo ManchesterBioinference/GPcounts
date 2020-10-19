@@ -17,6 +17,7 @@ import scipy as sp
 from scipy import interpolate
 from robustgp import ConditionalVariance
 from pandas import DataFrame
+from scipy.special import logsumexp
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -141,16 +142,19 @@ class Fit_GPcounts(object):
 
 
     def Model_selection_test(self,lik_name = 'Negative_binomial',kernel = None):
-       
-        ker_list = ['linear', 'periodic', 'rbf']
+        # Run GP model for linear, periodic and rbf kernels and calculate BIC
+        ker_list = ['Linear','Periodic','RBF']
         genes_index = range(self.D)  
-        df = pd.DataFrame()
-        df['Dynamic_model_log_likelihood'] = 0
-        df['Gene'] = 0
-        df['Model'] = 0
-        df['Constant_model_log_likelihood'] = 0
-        df['log_likelihood_ratio'] = 0
-        df['BIC'] = 0
+        selection_results = pd.DataFrame()
+        selection_results['Gene'] = 0
+        selection_results['Dynamic_model_log_likelihood'] = 0
+        selection_results['Constant_model_log_likelihood'] = 0
+        selection_results['log_likelihood_ratio'] = 0
+        selection_results['p_value'] = 0
+        selection_results['q_value'] = 0
+        selection_results['log_likelihood_ratio'] = 0
+        selection_results['Model'] = 0
+        selection_results['BIC'] = 0
 
 
         for word in ker_list:
@@ -158,11 +162,28 @@ class Fit_GPcounts(object):
             results = self.run_test(lik_name,2,genes_index)        
             results['BIC'] = -2*results['Dynamic_model_log_likelihood'] + self.K*np.log(self.X.shape[0])
             results['Gene'] = self.genes_name
-
             results['Model'] = word
-            df = df.merge(results, how = 'outer')
+            results['p_value'] = 1 - ss.chi2.cdf(results['log_likelihood_ratio'], df=1)
+            results['q_value']= self.qvalue(results['p_value'])
+            selection_results = selection_results.merge(results, how = 'outer')
 
-        return df
+        # Model probability estimation based on bic based on SpatialDE:identification of spatially variable genes: https://www.nature.com/articles/nmeth.4636
+            tr = selection_results.groupby(['Gene','Model'])['BIC'].transform(min) == selection_results['BIC']
+            # select bic values for each kernel and gene
+            bic_values = -selection_results[tr].pivot_table(values='BIC', index='Gene', columns='Model')
+            log_v = logsumexp(bic_values,1)
+            log_model_prob= (bic_values.T - log_v).T
+            model_prob = np.exp(log_model_prob).add_suffix('_probability')
+
+            tr = selection_results.groupby('Gene')['BIC'].transform(min) == selection_results['BIC']
+            selection_results_prob = selection_results[tr]
+            selection_results_prob = selection_results_prob.join(model_prob, on='Gene')
+            transfer_columns = ['p_value', 'q_value']
+            selection_results_prob = selection_results_prob.drop(transfer_columns,1)\
+                .merge(selection_results,how = 'inner')
+
+
+        return selection_results_prob
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
         
