@@ -18,6 +18,9 @@ from scipy import interpolate
 from robustgp import ConditionalVariance
 from pandas import DataFrame
 from scipy.special import logsumexp
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
 
 # Get number of cores reserved by the batch system (NSLOTS is automatically set, or use 1 if not)
 NUMCORES=int(os.getenv("NSLOTS",1))
@@ -167,10 +170,15 @@ class Fit_GPcounts(object):
             results['q_value']= self.qvalue(results['p_value'])
             selection_results = selection_results.merge(results, how = 'outer')
 
-        # Model probability estimation based on bic based on SpatialDE:identification of spatially variable genes: https://www.nature.com/articles/nmeth.4636
+             # Model probability estimation based on bic based on SpatialDE:identification of spatially variable genes: https://www.nature.com/articles/nmeth.4636
             tr = selection_results.groupby(['Gene','Model'])['BIC'].transform(min) == selection_results['BIC']
             # select bic values for each kernel and gene
             bic_values = -selection_results[tr].pivot_table(values='BIC', index='Gene', columns='Model')
+            restore_these_settings = np.geterr()
+            temp_settings = restore_these_settings.copy()
+            temp_settings["over"] = "ignore"
+            temp_settings["under"] = "ignore"
+            np.seterr(**temp_settings)
             log_v = logsumexp(bic_values,1)
             log_model_prob= (bic_values.T - log_v).T
             model_prob = np.exp(log_model_prob).add_suffix('_probability')
@@ -179,6 +187,7 @@ class Fit_GPcounts(object):
             selection_results_prob = selection_results[tr]
             selection_results_prob = selection_results_prob.join(model_prob, on='Gene')
             transfer_columns = ['p_value', 'q_value']
+            np.seterr(**restore_these_settings)
             selection_results_prob = selection_results_prob.drop(transfer_columns,1)\
                 .merge(selection_results,how = 'inner')
 
