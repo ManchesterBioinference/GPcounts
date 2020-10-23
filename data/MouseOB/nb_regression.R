@@ -5,8 +5,8 @@ BiocManager::install("sva")
 #library(sva)
 library(MASS)
 
-counts <- read.table(file='../data/MouseOB/Rep11_MOB_0.csv', header=TRUE, sep=',')
-cells <- read.table(file='../data/MouseOB/locations.csv', header=TRUE, sep=',')
+counts <- read.table(file='/Users/user/GPcounts/data/MouseOB/Rep11_MOB_0.csv', header=TRUE, sep=',')
+cells <- read.table(file='/Users/user/GPcounts/data/MouseOB/locations.csv', header=TRUE, sep=',')
 
 rownames(counts) = counts[,1]
 rownames(cells) = cells[,1]
