@@ -7,8 +7,9 @@ from matplotlib import pyplot as plt
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.lines as mlines
+import gpflow
 
-def plot(params,X,Y,sparse = False):
+def plot(params,X,Y,LLR = None,sparse = False):
     
     indexes = Y.index.values # list of genes to be plotted 
     xtest = np.linspace(np.min(X)-.1,np.max(X)+.1,100)[:,None] # points to make prediction
@@ -23,7 +24,7 @@ def plot(params,X,Y,sparse = False):
                 y = np.log(y+1)
         
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
-            
+            gpflow.utilities.print_summary(model, fmt='notebook')
             plt.tick_params(labelsize='large', width=2)     
             plt.ylabel('Gene Expression', fontsize=16)
             plt.xlabel('Times', fontsize=16)
@@ -46,36 +47,62 @@ def plot(params,X,Y,sparse = False):
                 lowess = sm.nonparametric.lowess    
                 # one standard deviation 68%
                 percentile_16 = lowess(np.percentile(var, 16, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+                #percentile_16 = np.percentile(var, 16, axis=0)
                 percentile_16 = [(i > 0) * i for i in percentile_16]
                 percentile_84 = lowess(np.percentile(var, 84, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+                #percentile_84 = np.percentile(var, 84, axis=0)
                 percentile_84 = [(i > 0) * i for i in percentile_84]
                 plt.fill_between(xtest[:,0],percentile_16,percentile_84,color=c,alpha=0.2)
 
                 # two standard deviation 95%
                 percentile_5 = lowess(np.percentile(var, 5, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+                #percentile_5 = np.percentile(var, 5, axis=0)
                 percentile_5 = [(i > 0) * i for i in percentile_5]
                 percentile_95 = lowess(np.percentile(var,95, axis=0),xtest[:,0],frac=1./5, return_sorted=False)
+                #percentile_95 = np.percentile(var,95, axis=0)
                 percentile_95 = [(i > 0) * i for i in percentile_95]
                 plt.fill_between(xtest[:,0],percentile_5,percentile_95,color=c,alpha=0.1)
 
             if params['test_name'] == 'Two_samples_test':
                 if model_index == 1:
-                    plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data    
+                    if LLR is not None:
+                        label = LLR.loc[indexes[[i]]]['log_likelihood_ratio'].values[0]
+                        plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.,label = str(indexes[i])+'-LLR='+'{00:.2f}'.format(label)) #data               
+                        plt.legend(loc='best') 
+                    else:
+                        plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data               
+                       
                     plt.scatter(X[int(X.shape[0]/2)::],y[int(X.shape[0]/2)::], s=30, marker='o', color= 'green',alpha=1.) #data
+                    
                 elif model_index == 2:
-                     plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data    
+                    plt.scatter(X[0:int(X.shape[0]/2)],y[0:int(X.shape[0]/2)], s=30, marker='o', color= 'royalblue',alpha=1.) #data
+                    
                 else:
                     plt.scatter(X[int(X.shape[0]/2)::],y[int(X.shape[0]/2)::], s=30, marker='o', color= 'green',alpha=1.) #data
+                    
            
             else: 
-                plt.scatter(X,y,s=30,marker = 'o',color=c,alpha=1.)
+                if LLR is not None:
+                    if params['test_name'] == 'One_sample_test':
+                        label =  str(indexes[i])+'-LLR ='+'{00:.2f}'.format(LLR.loc[indexes[[i]]]['log_likelihood_ratio'].values[0])
+                        
+                    else:
+                        label = str(indexes[i])+'-LL ='+'{00:.2f}'.format(LLR.loc[indexes[[i]]]['Dynamic_model_log_likelihood'].values[0])
+                        
+                    plt.scatter(X,y,s=30,marker = 'o',color=c,alpha=1.,label = label)  
+                else:
+                    plt.scatter(X,y,s=30,marker = 'o',color=c,alpha=1.) 
+                
+            if model_index == 1 and LLR is not None:
+                plt.legend(loc='best') 
+                
             if sparse:
                 inducing_points = model.inducing_variable.Z.numpy() 
                 # discard any inducing points outside X range
                 inducing_points = inducing_points[inducing_points >= np.min(X)]
                 inducing_points = inducing_points[inducing_points <= np.max(X)]
                 plt.scatter(inducing_points,np.zeros(inducing_points.shape[0]),s=30,marker = '^',color='red',label='inducing points',alpha=1.) 
-                plt.legend(loc='upper center', bbox_to_anchor=(1.20, 0.1))
+                #plt.legend(loc='upper center', bbox_to_anchor=(1.20, 0.1))
             
             if not(params['test_name'] == 'Two_samples_test' and model_index == 2):
                 plt.show()
