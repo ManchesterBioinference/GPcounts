@@ -105,12 +105,15 @@ class Fit_GPcounts(object):
                 
             self.Y = Y
             self.genes_name = self.Y.index.values.tolist() # gene expression name
-            
+            self.Y = self.Y.values # gene expression matrix
+            '''
             if self.lik_name == 'Gaussian':
                 self.Y = self.Y.values # gene expression matrix
             else:
                 self.Y = self.Y.values.astype(int)
                 self.Y = self.Y.astype(float)
+            self.Y_copy = self.Y
+            '''
                 
             self.Y_copy = self.Y
             self.D = Y.shape[0] # number of genes
@@ -121,19 +124,33 @@ class Fit_GPcounts(object):
     
     def Infer_trajectory(self,lik_name= 'Negative_binomial',transform = True): 
         
+        if transform == True:
+            self.Y = self.Y.astype(int)
+            self.Y = self.Y.astype(float)
+        self.Y_copy = self.Y
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,1,genes_index)
         
         return genes_results
         
     def One_sample_test(self,lik_name= 'Negative_binomial', transform = True):
-    
+        
+        if transform == True:
+            self.Y = self.Y.astype(int)
+            self.Y = self.Y.astype(float)
+        self.Y_copy = self.Y
+ 
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,2,genes_index)
         
         return genes_results
 
-    def Model_selection_test(self,lik_name = 'Negative_binomial',kernel = None):
+    def Model_selection_test(self,lik_name = 'Negative_binomial',kernel = None,transform = True):
+        
+        if transform == True:
+            self.Y = self.Y.astype(int)
+            self.Y = self.Y.astype(float)
+        self.Y_copy = self.Y       
         # Run GP model for linear, periodic and rbf kernels and calculate BIC
         ker_list = ['Linear','Periodic','RBF']
         genes_index = range(self.D)  
@@ -147,7 +164,6 @@ class Fit_GPcounts(object):
         selection_results['log_likelihood_ratio'] = 0
         selection_results['Model'] = 0
         selection_results['BIC'] = 0
-
 
         for word in ker_list:
             self.kernel = word
@@ -185,13 +201,23 @@ class Fit_GPcounts(object):
         
     def Two_samples_test(self,lik_name= 'Negative_binomial',transform = True):
         
+        if transform == True:
+            self.Y = self.Y.astype(int)
+            self.Y = self.Y.astype(float)
+        self.Y_copy = self.Y
+
         genes_index = range(self.D)
         genes_results = self.run_test(lik_name,3,genes_index)
         
         return genes_results
 
     def Infer_branching_location(self, cell_labels, bins_num=50, lik_name='Negative_binomial',
-                                               branching_point=-1000):
+                                               branching_point=-1000,transform = True):
+        if transform == True:
+            self.Y = self.Y.astype(int)
+            self.Y = self.Y.astype(float)
+        self.Y_copy = self.Y
+       
         cell_labels = np.array(cell_labels)
         self.X = np.c_[self.X, cell_labels[:, None]]
         self.branching = True
