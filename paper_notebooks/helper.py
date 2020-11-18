@@ -7,13 +7,13 @@ from matplotlib import pyplot as plt
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.lines as mlines
-import gpflow
+import gpflow 
 
 def plot(params,X,Y,sparse = False):
     
     indexes = Y.index.values # list of genes to be plotted 
     xtest = np.linspace(np.min(X)-.1,np.max(X)+.1,100)[:,None] # points to make prediction
-   
+    #likelihood = params['likelihood']
     for i in range(len(indexes)):
         fig = plt.figure()
         print(indexes[i])
@@ -24,10 +24,10 @@ def plot(params,X,Y,sparse = False):
                 y = np.log(y+1)
         
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
-            
+            gpflow.utilities.print_summary(model, fmt='notebook')
             plt.tick_params(labelsize='large', width=2)     
-            #plt.ylabel('Gene Expression', fontsize=16)
-            #plt.xlabel('Times', fontsize=16)
+            plt.ylabel('Gene Expression', fontsize=16)
+            plt.xlabel('Times', fontsize=16)
             c = 'royalblue'
 
             if model_index == 3:
@@ -76,7 +76,7 @@ def plot(params,X,Y,sparse = False):
                 inducing_points = inducing_points[inducing_points >= np.min(X)]
                 inducing_points = inducing_points[inducing_points <= np.max(X)]
                 plt.scatter(inducing_points,np.zeros(inducing_points.shape[0]),s=30,marker = '^',color='red',label='inducing points',alpha=1.) 
-                plt.legend(loc='upper center', bbox_to_anchor=(.50, -0.1))
+                plt.legend(loc='upper center', bbox_to_anchor=(1.20, 0.1))
             
             if not(params['test_name'] == 'Two_samples_test' and model_index == 2):
                 plt.show()
