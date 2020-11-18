@@ -166,7 +166,7 @@ class Fit_GPcounts(object):
             results['BIC'] = -2*results['Dynamic_model_log_likelihood'] + self.K*np.log(self.X.shape[0])
             results['Gene'] = self.genes_name
             results['Model'] = word
-            results['p_value'] = 1 - ss.chi2.cdf(results['log_likelihood_ratio'], df=1)
+            results['p_value'] = 1 - ss.chi2.cdf(2*results['log_likelihood_ratio'], df=1)
             results['q_value']= self.qvalue(results['p_value'])
             selection_results = selection_results.merge(results, how = 'outer')
 
@@ -307,7 +307,7 @@ class Fit_GPcounts(object):
      
         
     def calculate_FDR(self,genes_results):
-        genes_results['p_value'] = 1 - ss.chi2.cdf(genes_results['log_likelihood_ratio'], df=1)
+        genes_results['p_value'] = 1 - ss.chi2.cdf(2*genes_results['log_likelihood_ratio'], df=1)
         genes_results['q_value']= self.qvalue(genes_results['p_value'])
         
         return genes_results
