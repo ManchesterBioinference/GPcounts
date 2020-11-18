@@ -15,8 +15,12 @@ from scipy.interpolate import CubicSpline
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-S = 2 # number of samples/cells  
-x = sorted([0.,.1 , .2,.3, .4,.5 ,.6,.7 ,.8,.9, 1.]*S)# Time points
+S = [2,4,1] # number of samples/cells  
+stop = [1,1,300] 
+x = np.linspace(0.0,stop[d],S[d]).tolist()
+number_of_genes = [200,400,300] 
+
+#x = sorted([0.,.1 , .2,.3, .4,.5 ,.6,.7 ,.8,.9, 1.]*S[i])# Time points
 #print(x)
 
 def sin_fun(): 
