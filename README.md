@@ -63,7 +63,7 @@ jupyter notebook
 | --- | --- | 
 | [Simulate_synthetic_counts](./paper_notebooks/Simulate_synthetic_counts.ipynb) | Simulate synthetic bulk RNA-seq timeseries|
 | [One_sample_test](./paper_notebooks/One_sample_test.ipynb) | One sample test on simulated bulk RNA-seq datasets and ROC curves to compare different likelihood functions|
-| [DESeq2_scRNA-seq](./paper_notebooks/DESeq2_scRNA-seq.ipynb) | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression data|
+| [DESeq2_scRNA-seq](./paper_notebooks/DESeq2_scRNA_seq.Rmd) | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression data|
 | [Precision_recall_spearman_correlation](./paper_notebooks/Precision_recall_spearman_correlation.ipynb) | Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data|
 | [Sparse_Precision_recall_spearman_correlation](./paper_notebooks/Sparse_Precision_recall_spearman_correlation.ipynb) | Correlate GPcounts using NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data with sparse GPcounts using same likelihoods comapring different methods to select the number and the location of inducing points.|
 
