@@ -14,7 +14,6 @@ print(percentage)
 from GPcounts.GPcounts_Module import Fit_GPcounts
 X_real = pd.read_csv('pst_real_10.csv',index_col=[0])
 Y = pd.read_csv('Cyclic_Index_10.csv',index_col=[0])
-
 likelihood = 'Negative_binomial' 
 gp_counts = Fit_GPcounts(X_real,Y,safe_mode = True) 
 gp_counts = Fit_GPcounts(X_real,Y,M= int((int(percentage)*(len(X_real)))/100) ,sparse= True,safe_mode = True) 

@@ -17,14 +17,14 @@ library(dplyr)
 ### prepare performance plots ####
 cols <- c(rep(c("#C6DBEF", "#08306B"), each = 3), "#4292C6", "#4daf4a",
           "#e41a1c", "#e78ac3", "#ff7f00", "darkgoldenrod1")
-names(cols) <- c("tradeSeq_slingshot_end", "tradeSeq_GPfates_end", "tradeSeq_true_3k",
+names(cols) <- c("tradeSeq_slingshot_end", "tradeSeq_GPfates_end", "tradeSeq_3_knots",
                  "tradeSeq_slingshot_pattern", "tradeSeq_GPfates_pattern",
-                 "tradeSeq_true_5k", "tradeSeq_slingshot_assoc", "GPcounts_NB",
+                 "tradeSeq_10_knots", "tradeSeq_5_knots", "GPcounts_NB",
                  "tradeSeq_true_10k", "GPcounts_true_Gaussian", "GPcounts_Gaussian", "GPcounts_true_NB")
 linetypes <- c(rep(c("solid", "solid", "solid"), 2), rep("solid", 7))
-names(linetypes) <- c("tradeSeq_slingshot_end", "tradeSeq_GPfates_end", "tradeSeq_true_3k",
+names(linetypes) <- c("tradeSeq_slingshot_end", "tradeSeq_GPfates_end", "tradeSeq_3_knots",
                       "tradeSeq_slingshot_pattern", "tradeSeq_GPfates_pattern",
-                      "tradeSeq_true_5k", "tradeSeq_slingshot_assoc", "GPcounts_NB",
+                      "tradeSeq_10_knots", "tradeSeq_5_knots", "GPcounts_NB",
                       "tradeSeq_true_10k", "GPcounts_true_Gaussian", "GPcounts_Gaussian", "GPcounts_true_NB")
 theme_set(theme_bw())
 theme_update(legend.position = "none",
@@ -35,7 +35,8 @@ theme_update(legend.position = "none",
              axis.title.x = element_text(size = rel(1)),
              axis.title.y = element_text(size = rel(1)),
              axis.text.x = element_text(size = rel(.8)),
-             axis.text.y = element_text(size = rel(.8)))
+             axis.text.y = element_text(size = rel(.8))
+             )
 
 dir <-("/Users/nuhabintayyash/GPcounts/paper_notebooks/tradeSeq/")
 
@@ -63,7 +64,7 @@ plotPerformanceCurve <- function(cobraObject){
                        minor_breaks = c(0:5) * .1) +
     scale_y_continuous(limits = c(0, 1)) +
     scale_color_manual(values = cols, breaks = names(cols)) +
-    scale_linetype_manual(values = linetypes, breaks = names(linetypes))
+    scale_linetype_manual(values = linetypes, breaks = names(linetypes)) + ylab("TPR")                                                                                                                      
     pDyntoy
 }
 
@@ -88,11 +89,12 @@ pAll <- ggplot(resPlots[[1]],
                aes(x = FDP, y = TPR, col = method)) +
   geom_path(size = 1, aes(linetype = method)) +
   scale_color_manual(values = cols, breaks = names(cols)) +
-  scale_linetype_manual(values = linetypes, breaks = names(linetypes))  + guides(fill=guide_legend(nrow=3))
+  scale_linetype_manual(values = linetypes, breaks = names(linetypes)) 
 
 legend_all <- get_legend(pAll + labs(col = "", linetype = "") +
                            theme(legend.position = "bottom",
-                                 legend.key.width = unit(1.3, "cm")))
+                            legend.text = element_text(size = 14)))
+#legend.key.width = unit(1.5, "cm"),
 
 pLeg <- plot_grid(pAll, legend_all, rel_heights=c(1,0.2), nrow=2, ncol=1)
 pLeg
@@ -223,7 +225,7 @@ scale_x_continuous(limits = c(0, 1), breaks = c(0.01, 0.05, 0.1, 0.5, 1),
                    minor_breaks = c(0:5) * .1) +
 scale_y_continuous(limits = c(0, 1)) +
 scale_color_manual(values = cols, breaks = names(cols)) +
-scale_linetype_manual(values = linetypes, breaks = names(linetypes)) + xlab("FDR") + ylab("TPR")
+scale_linetype_manual(values = linetypes, breaks = names(linetypes)) #+ xlab("FDR") + ylab("TPR")
 
 pMeanLegAll <- plot_grid(pMeanAll, legend_all, rel_heights=c(1,0.15), nrow=2, ncol=1)
 pMeanLegAll
@@ -233,20 +235,23 @@ scale_x_continuous(limits = c(0, 1), breaks = c(0.01, 0.05, 0.1, 0.5, 1),
                    minor_breaks = c(0:5) * .1) +
 scale_y_continuous(limits = c(0, 1)) +
 scale_color_manual(values = cols, breaks = names(cols)) +
-scale_linetype_manual(values = linetypes, breaks = names(linetypes)) + xlab("FDR") + ylab("TPR")
+scale_linetype_manual(values = linetypes, breaks = names(linetypes))# + xlab("FDR") + ylab("TPR")
 
 pMeanLegAll2 <- plot_grid(pMeanAll2, legend_all, rel_heights=c(1,0.15), nrow=2, ncol=1)
 pMeanLegAll2
 
 df_all <- rbind(df, df2)
 pMeanAll3 <- ggplot(df_all, aes(x=meanFDR, y=meanTPR, col=method)) + geom_path(size = 1) +
-  scale_x_continuous(limits = c(0, 1), breaks = c(0.01, 0.05, 0.1, 0.5, 1),
+  scale_x_continuous(limits = c(0, .6), breaks = c(0.01, 0.05, 0.1, 0.5, 1),
                      minor_breaks = c(0:5) * .1) +
   scale_y_continuous(limits = c(0, 1)) +
   scale_color_manual(values = cols, breaks = names(cols)) +
-  scale_linetype_manual(values = linetypes, breaks = names(linetypes)) + xlab("FDR") + ylab("TPR")
+  scale_linetype_manual(values = linetypes, breaks = names(linetypes)) +xlab("") + ylab("")+theme(axis.text.x = element_text( 
+                                   size=18, angle=-90), axis.text.y = element_text( size=18, angle=0))                   
 
-pMeanLegAll3 <- plot_grid(pMeanAll3, legend_all, rel_heights=c(1,0.15), nrow=2, ncol=1)
+
+#+ xlab("FDR") + ylab("TPR")
+#pMeanLegAll3 <- plot_grid(pMeanAll3, legend_all, rel_heights=c(1,0.15), nrow=2, ncol=1) + guides(fill=guide_legend(nrow=2,byrow=TRUE)) 
 pMeanLegAll3
 
 saveRDS(pMeanAll3, file="/Users/nuhabintayyash/GPcounts/paper_notebooks/tradeSeq/pMeanCycle_v2_GPcounts.rds")

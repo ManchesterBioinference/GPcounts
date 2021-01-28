@@ -55,21 +55,21 @@ for(datasetIter in 1:10){
   write.csv(pseudoT, file = paste0("pseudoT_Index_",datasetIter,".csv"))
   
   # Test for association of expression with the trajectory
-  assocTestRes <- associationTest(gamList)
+  #assocTestRes <- associationTest(gamList)
  
   # ### tradeSeq on true pseudotime
-  cWeights <- rep(1,ncol(counts))
-  pst <- matrix(truePseudotime, nrow=ncol(counts), ncol=1, byrow=FALSE)
-  gamListTrueTime <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights)
-  assocTestTrueRes <- associationTest(gamListTrueTime)
+   cWeights <- rep(1,ncol(counts))
+   pst <- matrix(truePseudotime, nrow=ncol(counts), ncol=1, byrow=FALSE)
+   gamListTrueTime <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights)
+   assocTestTrueRes <- associationTest(gamListTrueTime)
 
-  ### tradeSeq with 3 knots (Monocle default)
-  gamListTrueTime_3k <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights, nknots=3)
-  assocTestTrueRes_3k <- associationTest(gamListTrueTime_3k)
+  # ### tradeSeq with 3 knots (Monocle default)
+   gamListTrueTime_3k <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights, nknots=3)
+   assocTestTrueRes_3k <- associationTest(gamListTrueTime_3k)
 
-  ### tradeSeq with 5 knots (optimal acc. to AIC)
-  gamListTrueTime_5k <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights, nknots=5)
-  assocTestTrueRes_5k <- associationTest(gamListTrueTime_5k)
+  # ### tradeSeq with 5 knots (optimal acc. to AIC)
+   gamListTrueTime_5k <- fitGAM(counts, pseudotime=pst, cellWeights=cWeights, nknots=5)
+   assocTestTrueRes_5k <- associationTest(gamListTrueTime_5k)
 
   ########
   # FDP-TPR
@@ -87,16 +87,16 @@ for(datasetIter in 1:10){
   GP_real_G_counts <- read.csv(file=paste0("ll_true_Gaussian_Cyclic_Index_", datasetIter, ".csv"), header=TRUE,sep=",")
   
   ### estimated pseudotime
-  pval <- data.frame( #tradeSeq_slingshot_assoc=assocTestRes$pval,
-                      tradeSeq_true_10k=assocTestTrueRes$pval,
-                      tradeSeq_true_3k=assocTestTrueRes_3k$pval,
-                      tradeSeq_true_5k=assocTestTrueRes_5k$pval,
+  pval <- data.frame( #tradeSeq_5_knots=assocTestRes$pval,
+                      tradeSeq_10_knots=assocTestTrueRes$pval,
+                      tradeSeq_3_knots=assocTestTrueRes_3k$pval,
+                      tradeSeq_5_knots=assocTestTrueRes_5k$pval,
                         row.names=rownames(counts))
   score <- data.frame(
     #GPcounts_NB=GP_NB_counts$log_likelihood_ratio,
     #GPcounts_Gaussian=GP_G_counts$log_likelihood_ratio,
-    GPcounts_true_NB=GP_real_NB_counts$log_likelihood_ratio,
-    GPcounts_true_Gaussian=GP_real_G_counts$log_likelihood_ratio,
+    GPcounts_NB=GP_real_NB_counts$log_likelihood_ratio,
+    GPcounts_Gaussian=GP_real_G_counts$log_likelihood_ratio,
     row.names=rownames(counts))
   
   cobra <- COBRAData(pval=pval, truth=truth,score=score)
