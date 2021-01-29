@@ -62,15 +62,16 @@ jupyter notebook
 | File <br> name | Description | 
 | --- | --- | 
 | [Simulate_synthetic_counts](./paper_notebooks/Simulate_synthetic_counts.ipynb) | Simulate synthetic bulk RNA-seq timeseries|
-| [Anscombe_transformation](./paper_notebooks/One_sample_test.ipynb) | A modified version of Anscombe transformation notebook from  in [SpatialDE](https://github.com/Teichlab/SpatialDE) packages|
+| [Anscombe_transformation](./paper_notebooks/One_sample_test.ipynb) | A modified version of Anscombe transformation notebook from [SpatialDE](https://github.com/Teichlab/SpatialDE) packages|
 | [One_sample_test](./paper_notebooks/One_sample_test.ipynb) | One sample test on simulated bulk RNA-seq datasets and ROC curves to compare different likelihood functions|
 | [DESeq2_scRNA-seq](./paper_notebooks/DESeq2_scRNA_seq.Rmd) | Run DESeq2 R package to normalize scRNA-seq Islet  𝛼  cells gene expression data|
 | [Precision_recall_spearman_correlation](./paper_notebooks/Precision_recall_spearman_correlation.ipynb) | Correlate DESeq2 and GPcounts with NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data|
 | [scRNA-Seq_time_series](./paper_notebooks/scRNA-Seq_time_series.ipynb) | Applying GPcounts with zero-inflated negative binomial, negative binomial and Gaussian likelihoods on scRNA-seq gene expression data to find DE genes. We also demonstrate the use of sparse inference to improve computational efficiency.|
-| [Sparse_Precision_recall_spearman_correlation](./paper_notebooks/Sparse_Precision_recall_spearman_correlation.ipynb) | Correlate GPcounts using NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data with sparse GPcounts using same likelihoods comapring different methods to select the number and the location of inducing points.|
-| [time_evaluation](./paper_notebooks/tradeSeq/time_evaluation.ipynb) | GPcounts with one sample test on the 10th simulated cyclic dataset from [tradeSeq](https://www.bioconductor.org/packages/release/bioc/html/tradeSeq.html) package to compare full GP versus sparse GP using different number of inducing points.|
-| [spatial_data_pvalue_hist](./paper_notebooks/MOUSE_OB_Spatial/spatial_data_pvalue_hist.ipynb) |p-value histrogram plots for p-values as calculated via a permutation test and p-values as calculated assuming that the null follows a chi-squared with one degree distribution|
-| [MOUSE_OB_plots](./paper_notebooks/MOUSE_OB_Spatial/spatial_data_pvalue_hist.ipynb) |Results from null which follows a chi-squared with one degree of freedom distribution and results from permuted null distribution.|
+| [Sparse_Precision_recall_spearman_correlation](./paper_notebooks/Sparse_Precision_recall_spearman_correlation.ipynb) | Correlate GPcounts using NB and Gaussian likelihood results on scRNA-seq Islet  𝛼  cells gene expression data with sparse GPcounts using same likelihoods comapring different methods to select the the location of inducing points.|
+| [time_evaluation](./paper_notebooks/tradeSeq/time_evaluation.ipynb) | GPcounts with one sample test on the tenth simulated cyclic dataset from [tradeSeq](https://www.bioconductor.org/packages/release/bioc/html/tradeSeq.html) package to compare full GP versus sparse GP using different number of inducing points.|
+| [evaluate_genes](./paper_notebooks/tradeSeq/evaluate_genes.ipynb) | Example of genes from the first simulated cyclic dataset from [tradeSeq](https://www.bioconductor.org/packages/release/bioc/html/tradeSeq.html) package fitted using GPcounts one-sample test with pseudotime estimated using slingshot package and [slingshot](https://bioconductor.org/packages/release/bioc/html/slingshot.html) and using the true simulated time|
+| [spatial_data_pvalue_hist](./paper_notebooks/MOUSE_OB_Spatial/spatial_data_pvalue_hist.ipynb) | p-value histrogram plots for p-values as calculated via a permutation test and p-values as calculated assuming that the null follows a chi-squared with one degree distribution|
+| [MOUSE_OB_plots](./paper_notebooks/MOUSE_OB_Spatial/spatial_data_pvalue_hist.ipynb) | Results from null which follows a chi-squared with one degree of freedom distribution and results from permuted null distribution.|
 
 
 
