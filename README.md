@@ -4,7 +4,10 @@ and zero-inflated negative binomial likelihoods described in the paper "Non-para
 modelling of temporal and spatial counts data from RNA-seq experiments". It is implemented
 using the GPflow library. 
 
-Preprint: https://www.biorxiv.org/content/10.1101/2020.07.29.227207v2
+Preprint: https://www.biorxiv.org/content/10.1101/2020.07.29.227207v2 
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5027066.svg)](https://doi.org/10.5281/zenodo.5027066)
 
 ## Installation:
 
