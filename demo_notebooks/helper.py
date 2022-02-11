@@ -26,8 +26,8 @@ def plot(params,X,Y,LLR = None,sparse = False):
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
             gpflow.utilities.print_summary(model, fmt='notebook')
             plt.tick_params(labelsize='large', width=2)     
-            plt.ylabel('Gene Expression', fontsize=16)
-            plt.xlabel('Times', fontsize=16)
+            #plt.ylabel('Gene Expression', fontsize=16)
+            #plt.xlabel('Times', fontsize=16)
             c = 'royalblue'
 
             if model_index == 3:

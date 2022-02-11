@@ -1,2 +1,1 @@
-from . import GPcounts_Module,NegativeBinomialLikelihood,branchingKernel
-
+from . import GPcounts_Module, NegativeBinomialLikelihood, branchingKernel

@@ -12,7 +12,7 @@ import gpflow
 def plot(params,X,Y,LLR = None,sparse = False):
     
     indexes = Y.index.values # list of genes to be plotted 
-    xtest = np.linspace(np.min(X)-.1,np.max(X)+.1,100)[:,None] # points to make prediction
+    xtest = np.linspace(np.min(X),np.max(X),100)[:,None] # points to make prediction
     
     for i in range(len(indexes)):
         fig = plt.figure()
@@ -26,8 +26,8 @@ def plot(params,X,Y,LLR = None,sparse = False):
         for mean,var,model in zip(params['means'][i],params['vars'][i],params['models'][i]):
             gpflow.utilities.print_summary(model, fmt='notebook')
             plt.tick_params(labelsize='large', width=2)     
-            plt.ylabel('Gene Expression', fontsize=16)
-            plt.xlabel('Times', fontsize=16)
+           # plt.ylabel('Gene Expression', fontsize=16)
+           # plt.xlabel('Times', fontsize=16)
             c = 'royalblue'
 
             if model_index == 3:
