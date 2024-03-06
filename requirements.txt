@@ -6,6 +6,8 @@ pandas
 
 scipy
 
+scanpy
+
 tqdm
 
 scikit-learn
