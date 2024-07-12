@@ -10,6 +10,7 @@ import scipy as sp
 import tensorflow as tf
 from tqdm import tqdm
 from scipy.special import logsumexp
+from scipy import interpolate
 
 from GPcounts.GP_NB_ZINB import GP_nb_zinb
 
