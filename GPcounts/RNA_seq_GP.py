@@ -194,13 +194,13 @@ class rna_seq_gp(object):
     def fit_single_gene(self):
         
         # dynamic model
-        model_1_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,1)
+        model_1_log_likelihood,km,alpha = self.Run_GP_NB_ZINB(self.kernel_type,1)
         results = [model_1_log_likelihood]
 
         if self.models_number == 2:
             if not (np.isnan(model_1_log_likelihood)):
                 # Constant model
-                model_2_log_likelihood,alpha,km  = self.Run_GP_NB_ZINB('Constant',2,alpha,km)
+                model_2_log_likelihood,km,alpha  = self.Run_GP_NB_ZINB('Constant',2,alpha,km)
             else:
                 model_2_log_likelihood = np.nan 
             if not (np.isnan(model_2_log_likelihood) and np.isnan(model_2_log_likelihood)):
@@ -218,12 +218,12 @@ class rna_seq_gp(object):
             # initialize X and Y with first time series
             self.set_X_Y(X_df[0 : int(self.N / 2)], Y_df.iloc[:, 0 : int(self.N / 2)])
             
-            model_2_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,2)
+            model_2_log_likelihood,km,alpha = self.Run_GP_NB_ZINB(self.kernel_type,2)
             
             # initialize X and Y with second time series
             self.set_X_Y(X_df[self.N : :], Y_df.iloc[:, int(self.N) : :])
        
-            model_3_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,3)
+            model_3_log_likelihood,km,alpha = self.Run_GP_NB_ZINB(self.kernel_type,3)
             
             self.set_X_Y(X_df, Y_df)
 
