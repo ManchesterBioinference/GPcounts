@@ -422,12 +422,12 @@ class rna_seq_gp(object):
         else:
             # evaluate pi0 for different lambdas
             pi0 = []
-            lam = sp.arange(0, 0.90, 0.01)
-            counts = sp.array([(pv > i).sum() for i in sp.arange(0, 0.9, 0.01)])
+            lam = np.arange(0, 0.90, 0.01)
+            counts = np.array([(pv > i).sum() for i in np.arange(0, 0.9, 0.01)])
             for l in range(len(lam)):
                 pi0.append(counts[l] / (m * (1 - lam[l])))
 
-            pi0 = sp.array(pi0)
+            pi0 = np.array(pi0)
 
             # fit natural cubic spline
             tck = interpolate.splrep(lam, pi0, k=3)
