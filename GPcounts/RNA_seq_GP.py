@@ -6,7 +6,7 @@ import gpflow
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
-import scipy.interpolate as si
+import scipy as sp
 import tensorflow as tf
 from tqdm import tqdm
 from scipy.special import logsumexp
@@ -193,13 +193,13 @@ class rna_seq_gp(object):
     def fit_single_gene(self):
         
         # dynamic model
-        model_1_log_likelihood, km, alpha, var = self.Run_GP_NB_ZINB(self.kernel_type,1)
+        model_1_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,1)
         results = [model_1_log_likelihood]
 
         if self.models_number == 2:
             if not (np.isnan(model_1_log_likelihood)):
                 # Constant model
-                model_2_log_likelihood, km, alpha, var  = self.Run_GP_NB_ZINB('Constant',2,alpha, km, var)
+                model_2_log_likelihood,alpha,km  = self.Run_GP_NB_ZINB('Constant',2,alpha,km)
             else:
                 model_2_log_likelihood = np.nan 
             if not (np.isnan(model_2_log_likelihood) and np.isnan(model_2_log_likelihood)):
@@ -217,12 +217,12 @@ class rna_seq_gp(object):
             # initialize X and Y with first time series
             self.set_X_Y(X_df[0 : int(self.N / 2)], Y_df.iloc[:, 0 : int(self.N / 2)])
             
-            model_2_log_likelihood, km, alpha, var = self.Run_GP_NB_ZINB(self.kernel_type,2,)
+            model_2_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,2)
             
             # initialize X and Y with second time series
             self.set_X_Y(X_df[self.N : :], Y_df.iloc[:, int(self.N) : :])
        
-            model_3_log_likelihood, km, alpha, var = self.Run_GP_NB_ZINB(self.kernel_type,3)
+            model_3_log_likelihood,alpha,km = self.Run_GP_NB_ZINB(self.kernel_type,3)
             
             self.set_X_Y(X_df, Y_df)
 
@@ -248,7 +248,7 @@ class rna_seq_gp(object):
     '''
     fit GP by calling Run_GP_NB_ZINB module 
     '''
-    def Run_GP_NB_ZINB(self,kern_type,model_index,alpha = None,km= None, var=None):
+    def Run_GP_NB_ZINB(self,kern_type,model_index,alpha = None,km= None):
         
         lik_km = None
         lik_alpha = None
@@ -260,7 +260,7 @@ class rna_seq_gp(object):
             scale = None
         
         gp_nb_zinb = GP_nb_zinb(self.X,self.Y.iloc[[self.index]],sparse= self.sparse,safe_mode = self.safe_mode,M= self.M, scale = scale, save= self.save) 
-        gp_nb_zinb.initialize_hyper_parameters(self.length_scale, var, alpha, km)
+        gp_nb_zinb.initialize_hyper_parameters(self.length_scale, self.variance, self.alpha, self.km)
         gp_nb_zinb.folder_name = self.folder_name
         gp_nb_zinb.lik_alpha = alpha
         gp_nb_zinb.lik_km = km
@@ -288,15 +288,14 @@ class rna_seq_gp(object):
         
         if self.models_number == 2:
             if not (np.isnan(log_likelihood)):
-                var = gp_nb_zinb.var
                 if self.lik_name == "Negative_binomial":
                     lik_alpha = gp_nb_zinb.model.likelihood.alpha.numpy()
                 if self.lik_name == "Zero_inflated_negative_binomial":
                     lik_km = gp_nb_zinb.model.likelihood.km.numpy()
                     lik_alpha = gp_nb_zinb.model.likelihood.alpha.numpy()
         del gp_nb_zinb
-
-        return log_likelihood,lik_km,lik_alpha, var
+        
+        return log_likelihood,lik_km,lik_alpha
     
     '''
     Return models with the parameters, means and variacnes to make a prediction
@@ -422,16 +421,16 @@ class rna_seq_gp(object):
         else:
             # evaluate pi0 for different lambdas
             pi0 = []
-            lam = np.arange(0, 0.90, 0.01)
-            counts = np.array([(pv > i).sum() for i in np.arange(0, 0.9, 0.01)])
+            lam = sp.arange(0, 0.90, 0.01)
+            counts = sp.array([(pv > i).sum() for i in sp.arange(0, 0.9, 0.01)])
             for l in range(len(lam)):
                 pi0.append(counts[l] / (m * (1 - lam[l])))
 
-            pi0 = np.array(pi0)
+            pi0 = sp.array(pi0)
 
             # fit natural cubic spline
-            tck = si.splrep(lam, pi0, k=3)
-            pi0 = si.splev(lam[-1], tck)
+            tck = interpolate.splrep(lam, pi0, k=3)
+            pi0 = interpolate.splev(lam[-1], tck)
 
             if pi0 > 1:
                 pi0 = 1.0
@@ -447,12 +446,13 @@ class rna_seq_gp(object):
             qv[i] = min(pi0 * m * pv[i] / (i + 1.0), qv[i + 1])
 
         # reorder qvalues
-        qv_temp = np.copy(qv)
+        qv_temp = np.copy()
         qv = np.zeros_like(qv)
         qv[p_ordered] = qv_temp
 
         # reshape qvalues
-        qv = np.reshape(qv, original_shape)
+        qv = np.reshape(original_shape)
+
         return qv
     
     '''

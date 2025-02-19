@@ -9,7 +9,7 @@ import pandas as pd
 import scipy.stats as ss
 import tensorflow as tf
 from gpflow.utilities import set_trainable
-from robustgp.init_methods.methods import ConditionalVariance
+from robustgp import ConditionalVariance
 from scipy import interpolate
 from scipy.signal import savgol_filter
 from scipy.special import logsumexp
@@ -234,8 +234,9 @@ class GP_nb_zinb(object):
     '''
     Return GP log likelihood if fit successed or nans in case of failure
     '''
-    def model_log_likelihood(self,lik_name="Negative_binomial",transform=True,txt = 'GP',kernel_type = 'RBF',models_number = 1, reset=False):
-        
+    def model_log_likelihood(self,lik_name="Negative_binomial",transform=True,txt = 'GP',kernel_type = 'RBF',models_number = 1):
+        reset = False
+       
         self.kernel_type = kernel_type
         self.lik_name = lik_name # likelihood name
         self.models_number = models_number
@@ -409,6 +410,7 @@ class GP_nb_zinb(object):
             if self.sparse:
                 if self.robustGP:
                     init_method =  ConditionalVariance()
+                    ## Fix the number of inducing points for constant kernel 
                     if self.kernel_type == "Constant":
                         self.Z = init_method.compute_initialisation(self.X, 1, kernel)[
                             0
@@ -417,6 +419,7 @@ class GP_nb_zinb(object):
                         self.Z = init_method.compute_initialisation(self.X, self.M, kernel)[
                         0
                     ]
+                   
                 self.model = gpflow.models.SVGP(kernel, likelihood, self.Z)
                 training_loss = self.model.training_loss_closure((self.X, self.y))
                 if self.kernel_type == 'Constant' and self.models_number == 2:
@@ -447,44 +450,39 @@ class GP_nb_zinb(object):
     user assign the default values for the hyper_parameters
     '''
     def initialize_hyper_parameters(
-        self, length_scale=None, variance=None, alpha=None, km=None):
-        
+        self, length_scale=None, variance=None, alpha=None, km=None , scale = None
+    ):
+        if length_scale is None:
+            self.hyper_parameters["ls"] = (5 * (np.max(self.X) - np.min(self.X))) / 100 # len(X)* 5%
+        else:
+            self.hyper_parameters["ls"] = length_scale
+
         if variance is None:
             if self.lik_name == "Gaussian" and not self.transform:
                 self.hyper_parameters["var"] = np.mean(self.y + 1 ** 2)
+            #****** Improved the initialisation of the RBF scale parameter to use the empirical variance of the data
             else:
                 if self.scale is not None:
-                    scale = self.scale.to_numpy().flatten()
-                    y = self.y.astype(np.float64).flatten()
-                    self.hyper_parameters["var"] = np.var(np.log((y + 1) / scale))
-                    var = self.hyper_parameters["var"]
-                
-                else: 
-                    y = self.y.astype(np.float64).flatten()
+                    Scale = np.array(self.scale)
+                    self.hyper_parameters["var"] = np.var(np.log((y + 1) / Scale))
+                    
+                else:    
                     self.hyper_parameters["var"] = np.var(np.log((y + 1)))
+                #np.mean(np.log(self.y + 1) ** 2)
+
+        else:
+            self.hyper_parameters["var"] = variance
 
         if alpha is None:
             self.hyper_parameters["alpha"] = 1.0
         else:
-            self.hyper_parameters["var"] = variance
-       
+            self.hyper_parameters["alpha"] = alpha
+
         if km is None:
             self.hyper_parameters["km"] = 35.0
         else:
             self.hyper_parameters["km"] = km
 
-        if alpha is None and "alpha" not in self.hyper_parameters:
-            alpha = 1.0
-            self.hyper_parameters["alpha"] = alpha
-
-        else:
-            self.hyper_parameters["alpha"] = alpha
-
-        if length_scale is None:
-            self.hyper_parameters["ls"] = (5 * (np.max(self.X) - np.min(self.X))) / 100 # len(X)* 5%
-        else:
-            self.hyper_parameters["ls"] = length_scale
-            
         self.user_hyper_parameters = [length_scale, variance, alpha, km]
     
     '''
@@ -500,8 +498,8 @@ class GP_nb_zinb(object):
             self.user_hyper_parameters[0],
             self.user_hyper_parameters[1],
             self.user_hyper_parameters[2],
-            self.user_hyper_parameters[3])
-        
+            self.user_hyper_parameters[3],
+        )
         # in case of failure change the seed and sample hyper-parameters from uniform distributions
         if reset:
             self.count_fix = self.count_fix + 1
@@ -516,12 +514,9 @@ class GP_nb_zinb(object):
             self.hyper_parameters["var"] = np.random.uniform(0.0, 10.0)
             self.hyper_parameters["alpha"] = np.random.uniform(0.0, 10.0)
             self.hyper_parameters["km"] = np.random.uniform(0.0, 100.0)
-            if self.kernel_type != "Constant":
-                self.hyper_parameters["var"] = np.random.uniform(0.0, 10.0)
         
-        if self.models_number == 2 and self.kernel_type == "Constant":
             if self.optimize and self.count_fix == 0:
-                if self.lik_name == "Negative_binomial" and self.lik_alpha is not None:
+                if self.lik_name == "Negative_binomial":
                     self.hyper_parameters["alpha"] = self.lik_alpha
 
         else:

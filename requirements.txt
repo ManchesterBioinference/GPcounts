@@ -1,21 +1,21 @@
-numpy==1.26.4
+numpy
 
-matplotlib==3.9.0
+matplotlib
 
-pandas==2.2.2
+pandas
 
-scipy==1.13.1
+scipy
 
-scanpy==1.10.1
+scanpy
 
-tqdm==4.66.4
+tqdm
 
-scikit-learn==1.5.0
+scikit-learn
 
-statsmodels==0.14.2
+statsmodels
 
-tensorflow==2.16.1
+tensorflow 
 
-gpflow==2.9.2
+gpflow
 
 
