@@ -23,10 +23,10 @@ pip install -r requirements.txt
 cd 
 git clone https://github.com/markvdw/RobustGP
 cd RobustGP
-python setup.py install
+python setup.py install or pip install .
 cd 
 cd GPcounts
-python setup.py install
+python setup.py install or pip install .
 cd 
 ```
 
