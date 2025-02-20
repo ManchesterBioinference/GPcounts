@@ -464,10 +464,10 @@ class GP_nb_zinb(object):
             else:
                 if self.scale is not None:
                     Scale = np.array(self.scale)
-                    self.hyper_parameters["var"] = np.var(np.log((y + 1) / Scale))
+                    self.hyper_parameters["var"] = np.var(np.log((self.y + 1) / Scale))
                     
                 else:    
-                    self.hyper_parameters["var"] = np.var(np.log((y + 1)))
+                    self.hyper_parameters["var"] = np.var(np.log((self.y + 1)))
                 #np.mean(np.log(self.y + 1) ** 2)
 
         else:
